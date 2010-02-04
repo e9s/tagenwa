@@ -40,6 +40,7 @@ class TestPre(unittest.TestCase):
 			(u'triple... dots',    [u'triple', u'...', u' ', u'dots']),
 			(u'読点、句点。',            [u'読点', u'、', u'句点', u'。']),
 			(u'※米印、こめじるし',         [u'※', u'米印', u'、', u'こめじるし']),
+			(u'こめ※じるし',         [u'こめ', u'※', u'じるし']),
 			(u'under_score',       [u'under_score']),
 			(u'hy-phen',           [u'hy-phen']),
 			(u'pl+us',             [u'pl',u'+',u'us']),
@@ -54,6 +55,7 @@ class TestPre(unittest.TestCase):
 			(u'--',                [u'--']),
 			(u'---',               [u'---']),
 			(u'----',              [u'----']),
+			(u'--..--',            [u'--',u'..',u'--']),
 			# test the katakana "chou'onpu" (not hyphen/dash!)
 			(u'ハロー',               [u'ハロー']),
 			# test quotes
