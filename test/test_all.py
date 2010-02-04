@@ -7,7 +7,6 @@ import test_pre
 
 all_tests = unittest.TestSuite([
 	
-	# tokenizer modules
 	test_uniscript.suite(),
 	test_token.suite(),
 	test_pre.suite(),
