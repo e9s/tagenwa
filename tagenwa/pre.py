@@ -71,6 +71,7 @@ def _resplit_strip_dash(tokens):
 
 
 def _split_strip_dash(text):
+	"""Split leading and trailing dashes."""
 	# shortcut when no split to do
 	if text[0] != u'-' and text[-1] != u'-':
 		return (None, text, None)
