@@ -1,0 +1,8 @@
+syntax: glob
+
+*.pyc
+*~
+
+# Komodo Edit project file
+*.kpf
+
