@@ -117,7 +117,7 @@ class Token(object):
 	def endswith(self, string):
 		return self.text.endswith(string)
 	def haslatin(self):
-		return any(script(c) == 'latin' for c in self.text)
+		return any(script(c, avoid_common=True) == 'Latin' for c in self.text)
 	def isalnum(self):
 		"""Return true if all characters in the token are alphanumeric and there is at least one character, false otherwise."""
 		return self.text.isalnum()

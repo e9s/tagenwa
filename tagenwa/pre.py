@@ -131,15 +131,15 @@ def _resplit_by_class(tokens, get_class):
 # http://www.fileformat.info/info/unicode/category/index.htm
 _UNICODE_CAT_MAPPING = {
 # splitting punctuations (but not dashes and connectors)
-	'Ps':u'punct open',
-	'Pi':u'punct open',
-	'Pe':u'punct close',
-	'Pf':u'punct close',
-	'Po':u'punct other',
+	'Ps':u'P(', # punct open
+	'Pi':u'P(', # punct open
+	'Pe':u'P)', # punct close
+	'Pf':u'P)', # punct close
+	'Po':u'Po', # punct other
 # splitting symbols (but not modifiers)
-	'Sc':u'currency',
-	'Sm':u'math',
-	'So':u'symbol other',
+	'Sc':u'Sc', # currency
+	'Sm':u'Sm', # math
+	'So':u'So', # symbol other
 }
 
 def _character_class(c):
@@ -157,9 +157,9 @@ def _character_class(c):
 		return _UNICODE_CAT_MAPPING[cat]
 	# splitting by script families
 	else:
-		s = script(c)
+		s = script(c, avoid_common=True)
 		if s:
 			return s
 		else:
-			return 'other'
+			return 'Other'
 

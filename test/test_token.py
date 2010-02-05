@@ -177,8 +177,8 @@ class TestToken(unittest.TestCase):
 			(u'あ', False),
 			# numbers
 			(u'1', True),
-			(u'①', False),
-			(u'ⅱ', False),
+			(u'①', False), # circled one
+			(u'ⅱ', True), # Small Roman Numeral Two (U+2171)
 			(u'四', False),
 			# punctuations
 			(u'_', True),

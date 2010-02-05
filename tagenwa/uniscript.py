@@ -10,24 +10,21 @@ from unicodedata import name
 from codecs import open
 from os.path import abspath, dirname, join as joinpath
 import re
-
-def islatin(text):
-	"""Return True if all characters are latin and there is at least one character, False otherwise."""
-	return len(text) and all(script(c) == 'LATIN' for c in text)
+import cPickle
 
 
-def block(c):
-	"""Return the Unicode block name of the character.
+def block(c, default=None):
+	"""Return the Unicode block name of the character or the default value if no block found.
 	
 	The data is based on the Unicode 5.1.0 database:
 	http://www.unicode.org/Public/5.1.0/ucd/Blocks.txt
 	
 	:param c: single character
 	:type c: unicode
-	:return: block name
+	:param default: default value (by default, None)
+	:return: block name or the default value
 	:rtype: str
 	:raise TypeError: if the argument is not a single unicode character.
-	:raise KeyError: if the character block is not found.
 	"""
 	# assert argument is a single unicode character
 	if not isinstance(c, unicode):
@@ -39,36 +36,56 @@ def block(c):
 	for a, b, blockname in _UCD_BLOCKS:
 		if a <= o <= b:
 			return blockname
-	raise KeyError('Unicode block not found.')
+	return default
 
 
-def script(c):
-	"""Return the script of the character if known, None otherwise.
+def _script(o, default=None):
+	"""Get the script of the Unicode codepoint or the default value if no script found."""
+	for a, b, name in _UCD_SCRIPTS:
+		if a <= o <= b:
+			return name
+	return default
+	
+
+def script(c, default=None, avoid_common=False):
+	"""Return the script of the character or the default value if no script found.
 	
 	The data is based on the Unicode 5.1.0 database:
 	http://www.unicode.org/Public/5.1.0/ucd/Scripts.txt
 	
 	:param c: character
 	:type c: unicode
-	:return: script name
+	:param default: default value (by default, None)
+	:param avoid_common: if True, try to replace the return value 'Common' by the main script of the block it belongs to (by default, False).
+	:type c: bool
+	:return: script name or the default value
 	:rtype: str
 	:raise TypeError: if the argument is not a single unicode character
-	:raise KeyError: if the character script is not found.
 	"""
 	# assert argument is a single unicode character
 	if not isinstance(c, unicode):
-		raise TypeError('block() argument must be unicode, not '+repr(type(c)))
+		raise TypeError('script() argument must be unicode, not '+repr(type(c)))
 	if len(c) != 1:
-		raise TypeError('block() argument must be a single unicode character')
+		raise TypeError('script() argument must be a single unicode character')
 	
+	# search script name in the database
 	o = ord(c)
-	for a, b, scriptname in _UCD_SCRIPTS:
-		if a <= o <= b:
-			return scriptname
-	raise KeyError('Unicode script not found.')
+	scriptname = _script(o, default)
+	
+	# replace common by the majority script of the block, if needed
+	if scriptname == u'Common' and avoid_common:
+		majority = _MAJORITY_SCRIPTS[block(c)]
+		return majority if majority else u'Common'
+	
+	return scriptname
 
+################################################################################
+# Initializing functions
+################################################################################
 
+"""UCD data file regex pattern"""
 _ucd_pattern = re.compile(r'(?P<start>[0-9A-F]+)(?:\.\.(?P<end>[0-9A-F]+))? *;(?P<value>[^#]*)(?:#|\n)')
+
 def _read_ucd_datafile(filename, folder='ucd510'):
 	"""Read UCD data file."""
 	filepath = joinpath(abspath(dirname(__file__)),folder,filename)
@@ -84,8 +101,46 @@ def _read_ucd_datafile(filename, folder='ucd510'):
 					data.append((start,end,value))
 	return data
 
+# initialize blocks and script database
 _UCD_BLOCKS = _read_ucd_datafile('Blocks.txt')
 _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt')
 
-from pprint import pprint
-pprint(_UCD_BLOCKS)
+def _group_count(iterable):
+	d = {}
+	for i in iterable:
+		d[i] = d.get(i,0) + 1
+	return d
+
+def _get_majority_scripts(folder='ucd510'):
+	filepath = joinpath(abspath(dirname(__file__)),folder,'MajorityScripts.txt')
+	try:
+		# read majority dictionary if it exists
+		return cPickle.load(open(filepath,'rt'))
+	except:
+		script_count_by_block = dict(
+			(
+				block,
+				dict((k,v) for (k,v) in _group_count(_script(i) for i in xrange(start, end+1)).iteritems() if k)
+			)
+			for (start,end,block) in _UCD_BLOCKS
+		)
+		# modify 'Common' to <blank> to put it last in case of ex-aequo
+		majority = dict(
+			(
+				block,
+				max((v,k if k != u'' else None) for (k,v) in counts.iteritems())[1] if counts else None
+			)
+			for (block,counts) in script_count_by_block.iteritems()
+		)
+		# put back <blank> as 'Common'
+		for k in majority:
+			if majority[k] == u'':
+				majority[k] = u'Common'
+		# correct basic latin
+		majority['Basic Latin'] = u'Latin'
+		# save majority dictionary
+		cPickle.dump(majority, open(filepath,'wt'))
+		return majority
+
+# initialize majority script of each block
+_MAJORITY_SCRIPTS = _get_majority_scripts()
