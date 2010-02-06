@@ -2,7 +2,7 @@
 import unittest
 
 from tagenwa.uniscript import script, block
-from unicodedata import normalize, name, category
+
 
 class TestScript(unittest.TestCase):
 	
