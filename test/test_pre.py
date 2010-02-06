@@ -26,8 +26,10 @@ class TestPre(unittest.TestCase):
 		testcases = [
 			# test numbers
 			(u'a01',               [u'a01']),
+			(u'a_01',              [u'a_01']),
 			(u'+555',              [u'+', u'555']),
 			(u'-555',              [u'-', u'555']),
+			(u'$555',              [u'$', u'555']),
 			(u'1.05',              [u'1', u'.', u'05']),
 		]
 		for (i,e) in testcases:
@@ -56,11 +58,20 @@ class TestPre(unittest.TestCase):
 			(u'---',               [u'---']),
 			(u'----',              [u'----']),
 			(u'--..--',            [u'--',u'..',u'--']),
+			# test sequence of punctuations
+			(u'***',               [u'***']),
+			(u'+=',                [u'+=']),
+			(u'-=',                [u'-',u'=']),
+			(u'.=',                [u'.',u'=']),
+			(u',=',                [u',',u'=']),
 			# test the katakana "chou'onpu" (not hyphen/dash!)
 			(u'ハロー',               [u'ハロー']),
 			# test quotes
 			(u'"quotes"',          [u'"', u'quotes', u'"']),
 			(u"simple'quote",      [u'simple', u"'", u'quote']),
+			# test opening and closing punctuations
+			(u'(parens)',          [u'(', u'parens', u')']),
+			(u"f((x,y),z)",        [u'f', u'((', u'x', u',', u'y', u')', u',', u'z', u')']),
 		]
 		for (i,e) in testcases:
 			self.assertEqual(e, list(unicode(t) for t in tokenize(i)))
