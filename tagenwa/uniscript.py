@@ -23,7 +23,7 @@ def block(c, default=None):
 	:type c: unicode
 	:param default: default value (by default, None)
 	:return: block name or the default value
-	:rtype: str
+	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character.
 	"""
 	# assert argument is a single unicode character
@@ -33,18 +33,7 @@ def block(c, default=None):
 		raise TypeError('block() argument must be a single unicode character')
 	
 	o = ord(c)
-	for a, b, blockname in _UCD_BLOCKS:
-		if a <= o <= b:
-			return blockname
-	return default
-
-
-def _script(o, default=None):
-	"""Get the script of the Unicode codepoint or the default value if no script found."""
-	for a, b, name in _UCD_SCRIPTS:
-		if a <= o <= b:
-			return name
-	return default
+	return _get_ucd_value(o, _UCD_BLOCKS, default)
 	
 
 def script(c, default=None, avoid_common=False):
@@ -59,7 +48,7 @@ def script(c, default=None, avoid_common=False):
 	:param avoid_common: if True, try to replace the return value 'Common' by the main script of the block it belongs to (by default, False).
 	:type c: bool
 	:return: script name or the default value
-	:rtype: str
+	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character
 	"""
 	# assert argument is a single unicode character
@@ -70,7 +59,7 @@ def script(c, default=None, avoid_common=False):
 	
 	# search script name in the database
 	o = ord(c)
-	scriptname = _script(o, default)
+	scriptname = _get_ucd_value(o, _UCD_SCRIPTS, default)
 	
 	# replace common by the majority script of the block, if needed
 	if scriptname == u'Common' and avoid_common:
@@ -78,6 +67,15 @@ def script(c, default=None, avoid_common=False):
 		return majority if majority else u'Common'
 	
 	return scriptname
+
+
+def _get_ucd_value(o, data, default=None):
+	"""Get the value of the Unicode codepoint in the data or the default value if no entry found."""
+	for a, b, value in data:
+		if a <= o <= b:
+			return value
+	return default
+
 
 ################################################################################
 # Initializing functions
@@ -105,25 +103,35 @@ def _read_ucd_datafile(filename, folder='ucd510'):
 _UCD_BLOCKS = _read_ucd_datafile('Blocks.txt')
 _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt')
 
+
 def _group_count(iterable):
+	"""Return a dictionary of occurences."""
 	d = {}
 	for i in iterable:
 		d[i] = d.get(i,0) + 1
 	return d
 
+
 def _get_majority_scripts(folder='ucd510'):
+	"""Return the majority script of each block (by calculating or unpickling it)."""
 	filepath = joinpath(abspath(dirname(__file__)),folder,'MajorityScripts.txt')
 	try:
 		# read majority dictionary if it exists
 		return cPickle.load(open(filepath,'rt'))
 	except:
+		# count scripts by block
 		script_count_by_block = dict(
 			(
 				block,
-				dict((k,v) for (k,v) in _group_count(_script(i) for i in xrange(start, end+1)).iteritems() if k)
+				_group_count(_get_ucd_value(i, _UCD_SCRIPTS) for i in xrange(start, end+1))
 			)
 			for (start,end,block) in _UCD_BLOCKS
 		)
+		# remove script = None
+		for block in script_count_by_block:
+			if None in script_count_by_block[block]:
+				del script_count_by_block[block][None]
+		
 		# modify 'Common' to <blank> to put it last in case of ex-aequo
 		majority = dict(
 			(
@@ -136,8 +144,9 @@ def _get_majority_scripts(folder='ucd510'):
 		for k in majority:
 			if majority[k] == u'':
 				majority[k] = u'Common'
-		# correct basic latin
+		# correct basic latin (too many common and control characters)
 		majority['Basic Latin'] = u'Latin'
+		
 		# save majority dictionary
 		cPickle.dump(majority, open(filepath,'wt'))
 		return majority
