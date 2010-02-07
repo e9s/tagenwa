@@ -5,6 +5,18 @@ from tagenwa.pre import tokenize
 
 class TestPre(unittest.TestCase):
 	
+	def test_tokenize_empty(self):
+		testcases = [
+			(u'', []),
+			(u' ', []),
+			(u'   ', []),
+			(u'\n', []),
+			(u'\r', []),
+			(u'\n\n\n', []),
+		]
+		for (i,e) in testcases:
+			self.assertEqual(e, list(unicode(t) for t in tokenize(i)))
+	
 	def test_tokenize_letters(self):
 		testcases = [
 			(u'Lowercase',         [u'lowercase']),
