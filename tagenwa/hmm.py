@@ -29,7 +29,7 @@ class AbstractHMM(object):
 	def viterbi(self, iterable, initarg=None):
 		"""Return the most probable sequence of hidden states.
 		
-		:param iterable: iterable of observable elements to tag 
+		:param iterable: iterable of observable elements to classify 
 		:type iterable: iterable
 		:param initarg: initial argument sent to loginit() (default value is None)
 		:return: sequence of tags
@@ -42,21 +42,25 @@ class AbstractHMM(object):
 		logtrans = self.logtrans
 		states = self.states
 		
-		# set up the initial path and the log-probabilities
-		T = {}
-		for j in states:
-			T[j] = (loginit(j, initarg),[])
+		# set the initial path and the log-probabilities
+		p = loginit(initarg)
+		T = dict((lang, (p[j],[])) for j in states)
+		# set the previous observable element to None
+		ti = None
 		
 		# search for the best path and the log-probability of the states sequence
-		for t in iterable:
+		for tj in iterable:
 			U = {}
-			p = logemit(t)
+			pe = logemit(tj)
 			for j in states:
 				# get the best path until state "j" (excluded) and its log-probability
-				logprob,i = max( (T[i][0] + logtrans(i,j,t), i) for i in states)
+				pt = logtrans(j,ti,tj)
+				logprob,i = max( (T[i][0] + pt[i], i) for i in states)
 				# save the new path until "j" (included) and its log-probability
-				U[j] = (logprob + p[j], T[i][1] + [j])
+				U[j] = (logprob + pe[j], T[i][1] + [j])
 			T = U
+			# copy previous state
+			tj = ti
 		
 		# get the best path and its log-probability
 		logprob, path = max(T[i] for i in states)
@@ -65,16 +69,32 @@ class AbstractHMM(object):
 		return path
 	
 	
-	def loginit(self, lang, initarg):
-		"""Return the initial log-probability of the language."""
+	def loginit(self, initarg):
+		"""Return the initial log-probability of each state.
+		
+		:param initarg: argument passed from self.viterbi()
+		:return: initial log-probability of each state
+		:rtype: dict
+		"""
 		raise NotImplementedError()
 	
 	
-	def logtrans(self, lang1, lang2, token1):
-		"""Return the transition log-probability of each language"""
+	def logtrans(self, state2, element1, element2):
+		"""Return the transition log-probability from each previous state
+		
+		:param state2: current state
+		:param element1: previous observable element
+		:param element2: current observable element
+		:return: transition log-probability from each previous state
+		:rtype: dict
+		"""
 		raise NotImplementedError()
 	
 	
-	def logemit(self, token):
-		"""Return the emission log-probability of each language"""
+	def logemit(self, element):
+		"""Return the emission log-probability of each language
+		
+		:return: emission log-probability of each state
+		:rtype: dict
+		"""
 		raise NotImplementedError()
