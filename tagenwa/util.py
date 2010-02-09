@@ -56,3 +56,53 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 	# yield the tuples
 	for tu in zipped:
 			yield tu
+
+
+
+def copycase(text, reference):
+	"""Return a copy of `text` with a case similar to `reference`.
+	
+	If the reference text is all lower case, all upper case or in title case,
+	the returned value will be in all lower case, all upper case or in title case
+	respectively.
+	
+	If the reference text and the original text have the same length, then the casing
+	of the reference text is applied to the original text character by character.
+	
+	If none of these previous conditions are met, the original text is returned
+	as is.
+	
+	Lower, upper or title case:
+	>>> copycase(u'aBc', u'xxxxx')
+	u'abc'
+	>>> copycase(u'aBc', u'XXXXX')
+	u'ABC'
+	>>> copycase(u'aBc', u'Xxxxx')
+	u'Abc'
+	
+	Same length:
+	>>> copycase(u'aBc', u'xxX')
+	u'abC'
+	
+	:param text: the text for which the case should be modified
+	:type text: unicode
+	:param reference: a text to use as reference for the choice of the case
+	:type reference: unicode
+	:return: a copy of the text with a case similar to `reference`
+	:rtype: unicode
+	"""
+	if reference.islower():
+		return text.lower()
+	elif reference.isupper():
+		return text.upper()
+	elif reference.istitle():
+		return text.title()
+	elif len(text) == len(reference):
+		return u''.join(
+			c.lower() if c0.islower() else
+			c.upper() if c0.isupper() else
+			c
+			for c,c0 in zip(text,reference)
+		)
+	# by default, return text
+	return text

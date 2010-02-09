@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.util import sliding_tuples
+from tagenwa.util import sliding_tuples, copycase
 
 
 class TestUtil(unittest.TestCase):
@@ -70,6 +70,40 @@ class TestUtil(unittest.TestCase):
 		]
 		for (i,e) in testcases:
 			self.assertEqual(e, list(sliding_tuples(*i)))
+	
+	def test_copycase(self):
+		testcases = [
+			# empty
+			(u'', u'', u''),
+			(u'', u'x', u''),
+			(u'', u'X', u''),
+			# single
+			(u'a', u'x', u'a'),
+			(u'a', u'X', u'A'),
+			(u'a', u'xxx', u'a'),
+			(u'a', u'XXX', u'A'),
+			(u'a', u'Xxx', u'A'),
+			# shorter
+			(u'aa', u'xxx', u'aa'),
+			(u'aa', u'Xxx', u'Aa'),
+			(u'aa', u'XXX', u'AA'),
+			# equal length
+			(u'aaa', u'xxx', u'aaa'),
+			(u'aaa', u'Xxx', u'Aaa'),
+			(u'aaa', u'xXx', u'aAa'),
+			(u'aaa', u'XXx', u'AAa'),
+			(u'aaa', u'xxX', u'aaA'),
+			(u'aaa', u'XxX', u'AaA'),
+			(u'aaa', u'xXX', u'aAA'),
+			(u'aaa', u'XXX', u'AAA'),
+			# default
+			(u'aa', u'xXx', u'aa'),
+			(u'aa', u'xxX', u'aa'),
+			(u'aa', u'xXX', u'aa'),
+			
+		]
+		for (i1,i2,e) in testcases:
+			self.assertEqual(e, copycase(i1,i2), (i1,i2,e))
 
 
 def suite():
