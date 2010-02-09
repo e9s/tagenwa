@@ -15,6 +15,13 @@ class TestScript(unittest.TestCase):
 			(u'$','Basic Latin'),
 			(u'é','Latin-1 Supplement'),
 			(u'è','Latin-1 Supplement'),
+			(u'ó','Latin-1 Supplement'),
+			(u'д','Cyrillic'),
+			(u'ค','Thai'),
+			(u'氣','CJK Unified Ideographs'),
+			(u'気','CJK Unified Ideographs'),
+			(u'の','Hiragana'),
+			(u'ト','Katakana'),
 		]
 		for i,e in testcases:
 			self.assertEqual(block(i),e)
