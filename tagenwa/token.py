@@ -7,6 +7,7 @@ __version__ = "0.1"
 __license__ = "MIT"
 
 from uniscript import script
+from util import copycase
 from copy import deepcopy
 from unicodedata import category as ucategory
 
@@ -91,6 +92,8 @@ class Token(object):
 	
 	def __add__(self, y):
 		return self._copy_and_apply_to_text(unicode.__add__, y)
+	def copycase(self, reference):
+		return self._copy_and_apply_to_text(copycase)
 	def lower(self):
 		return self._copy_and_apply_to_text(unicode.lower)
 	def strip(self, chars):
