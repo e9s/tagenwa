@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 """
-Multi-language tokenization for unicode texts.
+Multilingual preliminary tokenization for language identification.
 
-Tokenization is done on spaces, end of lines, non-connecting punctuations and 
-script classes.
+Tokenization is done on spaces, end of lines, non-connecting punctuations,
+symbols and changes of writing scripts.
 """
 
 __version__ = "0.1"
@@ -26,8 +26,15 @@ def tokenize(text):
 	Text is normalized into the normal form KC (form 'NFKC' in unicodedata.normalize)
 	which applies the compatibility decomposition followed by the canonical composition.
 	
+	Text is stripped from leading and trailing white spaces.
 	Consecutive space characters are converted into one ascii space (like in html) but
 	end of lines are kept as in the original text.
+	
+	Writing scripts (e.g.: latin, cyrillic,...) are separated.
+	
+	Non-connecting punctuations and symbols are separated from alphanumeric characters.
+	
+	TODO: add doctest examples.
 	
 	:param text: text to be tokenized
 	:type text: unicode
@@ -53,7 +60,7 @@ def tokenize(text):
 	tokens = _resplit_strip_dash(tokens)
 	
 	# return a generator of token
-	return (Token(t).lower() for t in tokens if t)
+	return (Token(t) for t in tokens if t)
 
 
 ###########################################################
@@ -73,7 +80,8 @@ def _resplit_strip_dash(tokens):
 def _split_strip_dash(text):
 	"""Split leading and trailing dashes."""
 	# shortcut when no split to do
-	if text[0] != u'-' and text[-1] != u'-':
+	length = len(text)
+	if length <= 1 or (text[0] != u'-' and text[-1] != u'-'):
 		return (None, text, None)
 	
 	length = len(text)

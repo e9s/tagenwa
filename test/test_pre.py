@@ -19,12 +19,12 @@ class TestPre(unittest.TestCase):
 	
 	def test_tokenize_letters(self):
 		testcases = [
-			(u'Lowercase',         [u'lowercase']),
-			(u'UPPERCASE',         [u'uppercase']),
-			(u'some English text', [u'some', u' ', u'english', u' ', u'text']),
+			(u'Lowercase',         [u'Lowercase']),
+			(u'UPPERCASE',         [u'UPPERCASE']),
+			(u'some English text', [u'some', u' ', u'English', u' ', u'text']),
 			(u'texte en français', [u'texte', u' ', u'en', u' ', u'français']),
 			(u'日本語で書いている文',        [u'日本語', u'で', u'書', u'いている', u'文']),
-			(u'日本語とEnglishの文',     [u'日本語', u'と', u'english', u'の', u'文']),
+			(u'日本語とEnglishの文',     [u'日本語', u'と', u'English', u'の', u'文']),
 			(u'ひらがなカタカナ漢字',        [u'ひらがな', u'カタカナ', u'漢字']),
 			# test half-width latin character
 			(u'aａa',               [u'aaa']),
@@ -99,16 +99,16 @@ class TestPre(unittest.TestCase):
 	
 	def test_tokenize_text(self):
 		testcases = [
-			(u'Hello,\nGoodbye.',  [u'hello',u',',u'\n',u'goodbye',u'.']),
-			(u'Hello,\n\nGoodbye.',  [u'hello',u',',u'\n\n',u'goodbye',u'.']),
-			(u'Hello,  \nGoodbye.',  [u'hello',u',',u' ',u'\n',u'goodbye',u'.']),
+			(u'Hello,\nGoodbye.',    [u'Hello',u',',u'\n',u'Goodbye',u'.']),
+			(u'Hello,\n\nGoodbye.',  [u'Hello',u',',u'\n\n',u'Goodbye',u'.']),
+			(u'Hello,  \nGoodbye.',  [u'Hello',u',',u' ',u'\n',u'Goodbye',u'.']),
 			# test space collapsing
-			(u'Hello, Goodbye.',     [u'hello',u',',u' ',u'goodbye',u'.']),
-			(u'Hello,    Goodbye.',  [u'hello',u',',u' ',u'goodbye',u'.']),
-			(u'Hello,\tGoodbye.',    [u'hello',u',',u' ',u'goodbye',u'.']),
-			(u'Hello,\t\tGoodbye.',  [u'hello',u',',u' ',u'goodbye',u'.']),
-			(u'Hello, \tGoodbye.',   [u'hello',u',',u' ',u'goodbye',u'.']),
-			(u'Hello, \t\tGoodbye.', [u'hello',u',',u' ',u'goodbye',u'.']),
+			(u'Hello, Goodbye.',     [u'Hello',u',',u' ',u'Goodbye',u'.']),
+			(u'Hello,    Goodbye.',  [u'Hello',u',',u' ',u'Goodbye',u'.']),
+			(u'Hello,\tGoodbye.',    [u'Hello',u',',u' ',u'Goodbye',u'.']),
+			(u'Hello,\t\tGoodbye.',  [u'Hello',u',',u' ',u'Goodbye',u'.']),
+			(u'Hello, \tGoodbye.',   [u'Hello',u',',u' ',u'Goodbye',u'.']),
+			(u'Hello, \t\tGoodbye.', [u'Hello',u',',u' ',u'Goodbye',u'.']),
 		]
 		for (i,e) in testcases:
 			self.assertEqual(e, list(unicode(t) for t in tokenize(i)))
