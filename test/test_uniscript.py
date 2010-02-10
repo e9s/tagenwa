@@ -22,6 +22,7 @@ class TestScript(unittest.TestCase):
 			(u'気','CJK Unified Ideographs'),
 			(u'の','Hiragana'),
 			(u'ト','Katakana'),
+			(u'ಠ','Kannada'),
 		]
 		for i,e in testcases:
 			self.assertEqual(block(i),e)

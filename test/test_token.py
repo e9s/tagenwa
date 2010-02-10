@@ -163,6 +163,8 @@ class TestToken(unittest.TestCase):
 			(u' ', False),
 			(u'\t', False),
 			(u'\r\n', False),
+			# look of disapproval
+			(u'ಠ_ಠ', True),
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isterm(), repr(i))
