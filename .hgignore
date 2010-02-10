@@ -6,3 +6,5 @@ syntax: glob
 # Komodo Edit project file
 *.kpf
 
+# Ready-made language identification training data
+tagenwa/readymade/langid_training
