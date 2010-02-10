@@ -9,10 +9,7 @@ __license__ = "MIT"
 from hmm import AbstractHMM
 from util import sliding_tuples
 
-from math import log, log1p, exp
-from os.path import dirname, abspath, join as joinpath
-from codecs import open as opentext
-import cPickle
+from math import log, log1p
 
 
 
@@ -135,6 +132,5 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		total_freq = self.frequency_totals[lang]
 		
 		# calculate logprob
-		# (it assumes that most knwon languages have an alphabet with less than 35 letters)
 		return sum(log1p(freqs.get(g,0.0)) for g in ngrams) - log(self.prior_ngram + total_freq) * len(ngrams)
 	
