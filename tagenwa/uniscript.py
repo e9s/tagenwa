@@ -114,7 +114,7 @@ def _group_count(iterable):
 
 def _get_majority_scripts(folder='ucd510'):
 	"""Return the majority script of each block (by calculating or unpickling it)."""
-	filepath = joinpath(abspath(dirname(__file__)),folder,'MajorityScripts.txt')
+	filepath = joinpath(abspath(dirname(__file__)),folder,'BlockScripts.cache.txt')
 	try:
 		# read majority dictionary if it exists
 		return cPickle.load(open(filepath,'rt'))
