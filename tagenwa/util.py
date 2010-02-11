@@ -6,6 +6,7 @@ Useful functions for tokenization
 
 from itertools import tee, chain, izip, izip_longest
 # INFO: izip_longest is new in Python 2.6
+from collections import defaultdict
 from threading import Lock
 
 def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
@@ -57,6 +58,13 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 	for tu in zipped:
 			yield tu
 
+
+def group_count(iterable):
+	"""Return a dictionary of occurences."""
+	d = defaultdict(int)
+	for i in iterable:
+		d[i] += 1
+	return dict(d)
 
 
 def copycase(text, reference):

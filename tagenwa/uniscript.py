@@ -6,7 +6,7 @@ Unicode script helper functions
 __version__ = "0.1"
 __license__ = "MIT"
 
-from util import memoize
+from util import memoize, group_count
 
 from unicodedata import name
 from codecs import open
@@ -107,14 +107,6 @@ _UCD_BLOCKS = _read_ucd_datafile('Blocks.txt')
 _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt')
 
 
-def _group_count(iterable):
-	"""Return a dictionary of occurences."""
-	d = {}
-	for i in iterable:
-		d[i] = d.get(i,0) + 1
-	return d
-
-
 def _get_majority_scripts(folder='ucd510'):
 	"""Return the majority script of each block (by calculating or unpickling it)."""
 	filepath = joinpath(abspath(dirname(__file__)),folder,'BlockScripts.cache.txt')
@@ -126,7 +118,7 @@ def _get_majority_scripts(folder='ucd510'):
 		script_count_by_block = dict(
 			(
 				block,
-				_group_count(_get_ucd_value(i, _UCD_SCRIPTS) for i in xrange(start, end+1))
+				group_count(_get_ucd_value(i, _UCD_SCRIPTS) for i in xrange(start, end+1))
 			)
 			for (start,end,block) in _UCD_BLOCKS
 		)
