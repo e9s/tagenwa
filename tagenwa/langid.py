@@ -56,13 +56,17 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		self.ngram_generator = ngram_generator
 	
 	
+	def shouldguess(self, token):
+		return not token.isspace()
+	
+	
 	def guess(self, tokens, initarg=None):
 		tokens = list(tokens)
 		
 		# filter tokens for which we are guessing the language
 		guesstokens = (t for t in tokens if self.shouldguess(t))
 		
-		languages = super.viterbi(guesstokens, initarg)
+		languages = super(NGramHMMLanguageIdentifier,self).viterbi(guesstokens, initarg)
 		# tag tokens for which we guessed the language
 		iterpath = iter(languages)
 		return (t.set(u'lang', iterpath.next()) if self.shouldguess(t) else t for t in tokens)
@@ -71,7 +75,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	def train(self, tokens, lang):
 		# add language if not existing
 		if lang not in self.frequencies:
-			self.languages.add(lang)
+			self.states.add(lang)
 			self.frequencies[lang] = {}
 			self.frequency_totals[lang] = 0
 		
@@ -96,7 +100,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	def logtrans(self, lang2, token1, token2):
 		"""Return the transition log-probability from each language"""
-		if token1.isterm():
+		if token1 and token1.isterm():
 			v_same, v_change = log1p(-1E-8), log(1E-8)
 		else:
 			v_same, v_change = log1p(-1E-5), log(1E-5)
