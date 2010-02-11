@@ -82,9 +82,8 @@ def _split_strip_dash(text):
 	# shortcut when no split to do
 	length = len(text)
 	if length <= 1 or (text[0] != u'-' and text[-1] != u'-'):
-		return (None, text, None)
+		return (text,)
 	
-	length = len(text)
 	# find leading dashes
 	i = 0
 	while i < length:
@@ -128,7 +127,7 @@ def _resplit_by_class(tokens, get_class):
 			previous_class = current_class
 		# end of the token
 		if buffer:
-			# if not empty, yield the buffer  then empty it
+			# if not empty, yield the buffer then empty it
 			yield u''.join(buffer)
 			buffer = []
 	return
