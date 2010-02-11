@@ -66,8 +66,8 @@ def copycase(text, reference):
 	the returned value will be in all lower case, all upper case or in title case
 	respectively.
 	
-	If the reference text and the original text have the same length, then the casing
-	of the reference text is applied to the original text character by character.
+	If the original text is shorter or has the same length as the reference text,
+	then the casing of the reference text is applied to the original text character by character.
 	
 	If none of these previous conditions are met, the original text is returned
 	as is.
