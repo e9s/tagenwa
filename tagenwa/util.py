@@ -190,7 +190,7 @@ def memoize(size=512):
 		lfukeys = []
 		def wrapper(*args,**kwargs):
 			key = (args,frozenset(kwargs.items()))
-			# get the value (and remove the from the LFU list if found)
+			# get the value (and remove the key from the LFU list if found)
 			if key in cache:
 				value = cache[key]
 				lfukeys.remove(key)
