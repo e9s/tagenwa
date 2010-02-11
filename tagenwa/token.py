@@ -172,5 +172,5 @@ class Token(object):
 		return self.text
 	
 	def __repr__(self):
-		return self.text.encode('unicode_escape')+'{'+','.join(unicode(k).encode('unicode_escape')+':'+repr(v) for k,v in self.properties.iteritems())+'}'
+		return self.text.encode('unicode_escape')+'{'+', '.join(unicode(k).encode('unicode_escape')+':'+repr(v) for k,v in self.properties.iteritems())+'}'
 
