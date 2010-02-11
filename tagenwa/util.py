@@ -7,7 +7,6 @@ Useful functions for tokenization
 from itertools import tee, chain, izip, izip_longest
 # INFO: izip_longest is new in Python 2.6
 
-
 def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
 	"""Generate an iterable of tuples of consecutive items from the iterable.
 	
@@ -108,7 +107,7 @@ def copycase(text, reference):
 	return text
 
 
-def sub(iterable, matchingset, replace=None, key=None, maxlength=None):
+def sub(iterable, matchingset, replace, key=None, maxlength=None):
 	"""
 	Substitute continuous elements in the iterable.
 	
@@ -119,9 +118,9 @@ def sub(iterable, matchingset, replace=None, key=None, maxlength=None):
 	By default, the `key` function just return the tuple of continous elements.
 	The `replace` function returns an iterable of elements to use as replacement.
 	
-	>>> matching = set([('b','c')])
+	>>> matching = set([('b','c'),('b','c','f')])
 	>>> # replace() joins characters together and converts them to upper case
-	>>> replace=lambda x:[''.join(x).upper()]
+	>>> replace = lambda x:[''.join(x).upper()]
 	>>> list(sub('abcde', matching, replace=replace))
 	['a', 'BC', 'd', 'e']
 	
@@ -147,31 +146,69 @@ def sub(iterable, matchingset, replace=None, key=None, maxlength=None):
 	"""
 	if key is None:
 		key = lambda x:x
-	if replace is None:
-		replace = lambda x:[(x)]
 	if maxlength is None:
 		maxlength = max(len(k) for k in matchingset)
 	
-	subbed = iterable
-	for length in xrange(maxlength, 0, -1):
-		subbed = _sub(subbed, matchingset, replace, key, length)
-	return subbed
+	tuples = sliding_tuples(iterable, maxlength, filllead=False, filltail=True)
+	for tu0 in tuples:
+		replacing = False
+		# check each sub-tuple
+		for length in xrange(maxlength, 0, -1):
+			tu = tuple(tu0[:length])
+			if key(tu) in matchingset:
+				replacing = True
+				# yield the replacing elements
+				for r in replace(tu):
+					yield r
+				# move forward the sliding tuples iterable
+				try:
+					for j in xrange(length-1):
+						tuples.next()
+				except:
+					continue
+		# yield the original element if no replacement
+		if not replacing:
+			yield tu0[0]
+	#TODO sub in end of iterable
+	return
 
 
-def _sub(iterable, matchingset, replace, key, length):
-	tuples = sliding_tuples(iterable, length, filllead=False, filltail=True)
-	for tu in tuples:
-		if key(tu) in matchingset:
-			# yield the replacing elements
-			for r in replace(tu):
-				yield r
-			# move forward the sliding tuples iterable
-			try:
-				for j in xrange(length-1):
-					tuples.next()
-			except:
-				continue
-		else:
-			# yield a single element of iterable
-			yield tu[0]
-
+def memoize(size=512):
+	"""Memoizing decorator with LFU cache.
+	
+	The memoize decorator should be used like this:
+	>>> @memoize(size=127)
+	... def f(arg):
+	...     # code here
+	...     pass
+	
+	:param size: size of the LFU cache
+	:type size: int
+	"""
+	def decorator(f):
+		cache = {}
+		lfukeys = []
+		def wrapper(*args,**kwargs):
+			key = (args,frozenset(kwargs.items()))
+			# get the value (and remove the from the LFU list if found)
+			if key in cache:
+				value = cache[key]
+				lfukeys.remove(key)
+			else:
+				value = f(*args,**kwargs)
+				cache[key] = value
+			# add the key to the top of the LFU list
+			lfukeys.append(key)
+			# delete the least frequently used item
+			if len(lfukeys) > size:
+				del cache[lfukeys.pop(0)]
+			return value
+		# store the original function
+		wrapper._original = f
+		# copy the magic values of the original function
+		wrapper.__doc__ = f.__doc__
+		wrapper.__name__ = f.__name__
+		wrapper.__module__ = f.__module__
+		return wrapper
+	return decorator
+	
