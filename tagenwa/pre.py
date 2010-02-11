@@ -36,6 +36,9 @@ def tokenize(text):
 	
 	TODO: add doctest examples.
 	
+	>>> list(t.text for t in tokenize(u'Hello world!!'))
+	[u'Hello', u' ', u'world', u'!!']
+	
 	:param text: text to be tokenized
 	:type text: unicode
 	:return: a generator of `Token`s
@@ -59,7 +62,7 @@ def tokenize(text):
 	# split leading and trailing dashes
 	tokens = _resplit_strip_dash(tokens)
 	
-	# return a generator of token
+	# return a generator of tokens
 	return (Token(t) for t in tokens if t)
 
 

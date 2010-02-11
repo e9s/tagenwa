@@ -1,9 +1,15 @@
 # -*- coding: UTF-8 -*-
-import unittest
+import unittest, doctest
 
 from tagenwa.pre import tokenize
 
+
 class TestPre(unittest.TestCase):
+	
+	def test_pre_doctest(self):
+		import tagenwa.pre
+		failure_count, test_count = doctest.testmod(tagenwa.pre)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.pre: %i failed out of %i' % (failure_count, test_count))
 	
 	def test_tokenize_empty(self):
 		testcases = [
