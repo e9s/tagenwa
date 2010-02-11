@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.util import sliding_tuples, copycase
+from tagenwa.util import sliding_tuples, copycase, sub
 
 
 class TestUtil(unittest.TestCase):
@@ -104,6 +104,18 @@ class TestUtil(unittest.TestCase):
 		]
 		for (i1,i2,e) in testcases:
 			self.assertEqual(e, copycase(i1,i2), (i1,i2,e))
+	
+	def test_sub_string(self):
+		testcases = [
+			('abcde',set(['bc']),['a','BC','X','d','e']),
+			('abcde',set(['de','abcd']),['ABCD','X','e']),
+			('abcde',set(['de','abce']),['a','b','c','DE','X']),
+			('abcdef',set(['de','abce']),['a','b','c','DE','X','f']),
+		]
+		replace = lambda x:[''.join(x).upper(),'X']
+		key = lambda x:''.join(x) if None not in x else None
+		for i,s,e in testcases:
+			self.assertEqual(e, list(sub(i, s, replace=replace, key=key)))
 
 
 def suite():
