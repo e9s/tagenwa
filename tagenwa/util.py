@@ -6,6 +6,7 @@ Useful functions for tokenization
 
 from itertools import tee, chain, izip, izip_longest
 # INFO: izip_longest is new in Python 2.6
+from threading import Semaphore
 
 def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
 	"""Generate an iterable of tuples of consecutive items from the iterable.
@@ -181,9 +182,8 @@ def memoize(size=512):
 	... def f(arg):
 	...     # code here
 	...     pass
-	In case multiple threads access the `memoize` decorator at the same time,
-	the memoization should work correctly but the size of the cache may not respect
-	temporarily its maximum size.
+	
+	The `memoize` decorator is written to be thread-safe.
 	
 	:param size: maximum size of the LFU cache
 	:type size: int
@@ -191,24 +191,34 @@ def memoize(size=512):
 	def decorator(f):
 		cache = {}
 		lfukeys = []
+		semaphore = Semaphore()
 		def wrapper(*args,**kwargs):
 			key = (args,frozenset(kwargs.items()))
 			# get the value (and remove the key from the LFU list if found)
+			semaphore.acquire()
 			if key in cache:
 				value = cache[key]
 				try:
 					lfukeys.remove(key)
 				except ValueError:
-					# this should never happen, except in race conditions
+					# this should never happen
 					pass
+				semaphore.release()
 			else:
+				semaphore.release()
+				# calculate the value outside of the critical section
+				# as this may be a long function which we could like to multi-thread
 				value = f(*args,**kwargs)
+				semaphore.acquire()
 				cache[key] = value
+				semaphore.release()
 			# add the key to the top of the LFU list
+			semaphore.acquire()
 			lfukeys.append(key)
 			# delete the least frequently used item
 			if len(lfukeys) > size:
 				del cache[lfukeys.pop(0)]
+			semaphore.release()
 			return value
 		# store the original function
 		wrapper._original = f
