@@ -7,4 +7,4 @@ syntax: glob
 *.kpf
 
 # Ready-made language identification training data
-tagenwa/readymade/langid_training
+tagenwa/readymade/eulangid_training
