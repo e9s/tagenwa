@@ -181,8 +181,11 @@ def memoize(size=512):
 	... def f(arg):
 	...     # code here
 	...     pass
+	In case multiple threads access the `memoize` decorator at the same time,
+	the memoization should work correctly but the size of the cache may not respect
+	temporarily its maximum size.
 	
-	:param size: size of the LFU cache
+	:param size: maximum size of the LFU cache
 	:type size: int
 	"""
 	def decorator(f):
@@ -193,7 +196,11 @@ def memoize(size=512):
 			# get the value (and remove the key from the LFU list if found)
 			if key in cache:
 				value = cache[key]
-				lfukeys.remove(key)
+				try:
+					lfukeys.remove(key)
+				except ValueError:
+					# this should never happen, except in race conditions
+					pass
 			else:
 				value = f(*args,**kwargs)
 				cache[key] = value
