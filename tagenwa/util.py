@@ -183,7 +183,8 @@ def memoize(size=512):
 	...     # code here
 	...     pass
 	
-	The `memoize` decorator is written to be thread-safe.
+	The `memoize` decorator is written to be thread-safe but the decorator
+	does not render the memoized function thread-safe.
 	
 	:param size: maximum size of the LFU cache
 	:type size: int
@@ -207,7 +208,7 @@ def memoize(size=512):
 			else:
 				lock.release()
 				# calculate the value outside of the critical section
-				# as this may be a long function which we could like to multi-thread
+				# as the function execution may be long so we could want to multi-thread it
 				value = f(*args,**kwargs)
 				lock.acquire()
 				cache[key] = value
