@@ -6,6 +6,8 @@ Unicode script helper functions
 __version__ = "0.1"
 __license__ = "MIT"
 
+from util import memoize
+
 from unicodedata import name
 from codecs import open
 from os.path import abspath, dirname, join as joinpath
@@ -34,8 +36,9 @@ def block(c, default=None):
 	
 	o = ord(c)
 	return _get_ucd_value(o, _UCD_BLOCKS, default)
-	
 
+
+@memoize(size=512)
 def script(c, default=None, avoid_common=False):
 	"""Return the script of the character or the default value if no script found.
 	
