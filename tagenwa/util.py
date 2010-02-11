@@ -106,3 +106,72 @@ def copycase(text, reference):
 		)
 	# by default, return text
 	return text
+
+
+def sub(iterable, matchingset, replace=None, key=None, maxlength=None):
+	"""
+	Substitute continuous elements in the iterable.
+	
+	The set or dictionary `matchingset` contains tuples for which a replacement
+	is to be done.
+	The `key` function transforms a tuple of continuous elements into a key that
+	is contained in the `matchingset` if the elements have to be replaced.
+	By default, the `key` function just return the tuple of continous elements.
+	The `replace` function returns an iterable of elements to use as replacement.
+	
+	>>> matching = set([('b','c')])
+	>>> # replace() joins characters together and converts them to upper case
+	>>> replace=lambda x:[''.join(x).upper()]
+	>>> list(sub('abcde', matching, replace=replace))
+	['a', 'BC', 'd', 'e']
+	
+	The `sub` function iterates several times over the iterable,
+	each time with a smaller sliding tuple length,
+	to generate all the possible tuples of continuous elements.
+	The time complexity of the `sub` function is therefore `O(t*n)`
+	where `t` is the length of the iterable
+	and `n` is the maximum length of the sliding windows
+	as specified by the `maxlength` argument.
+	
+	:param iterable: iterable with elements to substitute
+	:type iterable: iterable
+	:param matchingset: set or dict of keys
+	:param replace: function returning an iterable of replacement elements
+	:type replace: function
+	:param key: function accepting a tuple of consecutive elements and returning a key
+	:type key: function
+	:param maxlength: maximum length of consecutive elements to check 
+	:type maxlength: int
+	:return: iterable of elements
+	:rtype: iterable
+	"""
+	if key is None:
+		key = lambda x:x
+	if replace is None:
+		replace = lambda x:[(x)]
+	if maxlength is None:
+		maxlength = max(len(k) for k in matchingset)
+	
+	subbed = iterable
+	for length in xrange(maxlength, 0, -1):
+		subbed = _sub(subbed, matchingset, replace, key, length)
+	return subbed
+
+
+def _sub(iterable, matchingset, replace, key, length):
+	tuples = sliding_tuples(iterable, length, filllead=False, filltail=True)
+	for tu in tuples:
+		if key(tu) in matchingset:
+			# yield the replacing elements
+			for r in replace(tu):
+				yield r
+			# move forward the sliding tuples iterable
+			try:
+				for j in xrange(length-1):
+					tuples.next()
+			except:
+				continue
+		else:
+			# yield a single element of iterable
+			yield tu[0]
+
