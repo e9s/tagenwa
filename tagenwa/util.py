@@ -96,7 +96,7 @@ def copycase(text, reference):
 		return text.upper()
 	elif reference.istitle():
 		return text.title()
-	elif len(text) == len(reference):
+	elif len(text) <= len(reference):
 		return u''.join(
 			c.lower() if c0.islower() else
 			c.upper() if c0.isupper() else

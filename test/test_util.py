@@ -86,6 +86,11 @@ class TestUtil(unittest.TestCase):
 			# shorter
 			(u'aa', u'xxx', u'aa'),
 			(u'aa', u'Xxx', u'Aa'),
+			(u'aa', u'xXx', u'aA'),
+			(u'aa', u'XXx', u'AA'),
+			(u'aa', u'xxX', u'aa'),
+			(u'aa', u'XxX', u'Aa'),
+			(u'aa', u'xXX', u'aA'),
 			(u'aa', u'XXX', u'AA'),
 			# equal length
 			(u'aaa', u'xxx', u'aaa'),
@@ -96,11 +101,6 @@ class TestUtil(unittest.TestCase):
 			(u'aaa', u'XxX', u'AaA'),
 			(u'aaa', u'xXX', u'aAA'),
 			(u'aaa', u'XXX', u'AAA'),
-			# default
-			(u'aa', u'xXx', u'aa'),
-			(u'aa', u'xxX', u'aa'),
-			(u'aa', u'xXX', u'aa'),
-			
 		]
 		for (i1,i2,e) in testcases:
 			self.assertEqual(e, copycase(i1,i2), (i1,i2,e))
