@@ -6,7 +6,7 @@ Useful functions for tokenization
 
 from itertools import tee, chain, izip, izip_longest
 # INFO: izip_longest is new in Python 2.6
-from threading import Semaphore
+from threading import Lock
 
 def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
 	"""Generate an iterable of tuples of consecutive items from the iterable.
@@ -191,11 +191,11 @@ def memoize(size=512):
 	def decorator(f):
 		cache = {}
 		lfukeys = []
-		semaphore = Semaphore()
+		lock = Lock()
 		def wrapper(*args,**kwargs):
 			key = (args,frozenset(kwargs.items()))
 			# get the value (and remove the key from the LFU list if found)
-			semaphore.acquire()
+			lock.acquire()
 			if key in cache:
 				value = cache[key]
 				try:
@@ -203,22 +203,22 @@ def memoize(size=512):
 				except ValueError:
 					# this should never happen
 					pass
-				semaphore.release()
+				lock.release()
 			else:
-				semaphore.release()
+				lock.release()
 				# calculate the value outside of the critical section
 				# as this may be a long function which we could like to multi-thread
 				value = f(*args,**kwargs)
-				semaphore.acquire()
+				lock.acquire()
 				cache[key] = value
-				semaphore.release()
+				lock.release()
 			# add the key to the top of the LFU list
-			semaphore.acquire()
+			lock.acquire()
 			lfukeys.append(key)
 			# delete the least frequently used item
 			if len(lfukeys) > size:
 				del cache[lfukeys.pop(0)]
-			semaphore.release()
+			lock.release()
 			return value
 		# store the original function
 		wrapper._original = f
