@@ -44,7 +44,7 @@ class AbstractHMM(object):
 		
 		# set the initial path and the log-probabilities
 		p = loginit(initarg)
-		T = dict((lang, (p[j],[])) for j in states)
+		T = dict((j, (p[j],[])) for j in states)
 		# set the previous observable element to None
 		ti = None
 		
