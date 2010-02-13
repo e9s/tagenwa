@@ -39,6 +39,20 @@ def trigrams(text):
 
 
 
+def set_lang(tokens, lang):
+	"""Set the language of the iterable of tokens.
+	
+	:param tokens: iterable of tokens
+	:type tokens: iterable
+	:param lang: language (ISO 639 language code)
+	:type lang: unicode
+	:return: iterable of tokens with the property "lang" set to `lang` 
+	:rtype: iterable
+	"""
+	return (t.set(u'lang',lang) for t in tokens)
+
+
+
 class NGramHMMLanguageIdentifier(AbstractHMM):
 	"""Language identifier using a hidden markov model for
 	the language identification of the sequence of tokens.  The probability
@@ -57,7 +71,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	
 	def shouldguess(self, token):
-		return not token.isspace()
+		return token.isterm()
 	
 	
 	def guess(self, tokens, initarg=None):
@@ -101,9 +115,11 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	def logtrans(self, lang2, token1, token2):
 		"""Return the transition log-probability from each language"""
 		if token1 and token1.isterm():
-			v_same, v_change = log1p(-1E-8), log(1E-8)
+			v_same, v_change = log1p(-1E-9), log(1E-9)
+		elif token2 and token2.isterm():
+			v_same, v_change = log1p(-1E-7), log(1E-7)
 		else:
-			v_same, v_change = log1p(-1E-5), log(1E-5)
+			v_same, v_change = log1p(-1E-4), log(1E-4)
 		return dict((lang1,v_change if lang1 != lang2 else v_same) for lang1 in self.states)
 	
 	
@@ -112,7 +128,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		ngrams = list(self.ngram_generator(token.text))
 		length = len(ngrams)
 		
-		if length == 0:
+		if length == 0 or not token.text.replace(u'-',u'').isalpha():
 			# if ngrams is empty all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:
