@@ -42,11 +42,11 @@ class AbstractHMM(object):
 		logtrans = self.logtrans
 		states = self.states
 		
-		# set the initial path and the log-probabilities
+		# set the initial path and the log-probabilities of the first element
 		p = loginit(initarg)
-		T = dict((j, (p[j],[])) for j in states)
-		# set the previous observable element to None
-		ti = None
+		T = dict((j, (p[j],[j])) for j in states)
+		# set the previous observable element to the first element
+		ti = iterable.next()
 		
 		# search for the best path and the log-probability of the states sequence
 		for tj in iterable:
@@ -60,7 +60,7 @@ class AbstractHMM(object):
 				U[j] = (logprob + pe[j], T[i][1] + [j])
 			T = U
 			# copy previous state
-			tj = ti
+			ti = tj
 		
 		# get the best path and its log-probability
 		logprob, path = max(T[i] for i in states)

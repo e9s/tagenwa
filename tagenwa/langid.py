@@ -71,7 +71,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	
 	def shouldguess(self, token):
-		return token.isterm()
+		return not token.isspace() or token.iseol()
 	
 	
 	def guess(self, tokens, initarg=None):
@@ -114,12 +114,12 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	def logtrans(self, lang2, token1, token2):
 		"""Return the transition log-probability from each language"""
-		if token1 and token1.isterm():
+		if token1.isterm():
+			v_same, v_change = log1p(-1E-15), log(1E-15)
+		elif not token1.isterm() and token2.isterm():
 			v_same, v_change = log1p(-1E-9), log(1E-9)
-		elif token2 and token2.isterm():
-			v_same, v_change = log1p(-1E-7), log(1E-7)
 		else:
-			v_same, v_change = log1p(-1E-4), log(1E-4)
+			v_same, v_change = log1p(-1E-6), log(1E-6)
 		return dict((lang1,v_change if lang1 != lang2 else v_same) for lang1 in self.states)
 	
 	
