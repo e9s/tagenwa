@@ -163,6 +163,9 @@ class Token(object):
 		return self.text.isupper()
 	def startswith(self, string):
 		return self.text.startswith(string)
+	def isword(self):
+		"""Return true if the token is a word (only contains letters or dash punctuations), false otherwise."""
+		return all(ucategory(c).startswith('L') or ucategory(c) == 'Pd' for c in self.text)
 	
 ###########################################################
 # String conversions
