@@ -164,12 +164,12 @@ def _character_class(c):
 	# splitting by unicode category (punctuation and symbols)
 	cat = unicodedata.category(c)
 	if cat in _UNICODE_CAT_MAPPING:
-		return _UNICODE_CAT_MAPPING[cat]
+		return c
 	# splitting by script families
 	else:
 		s = script(c, avoid_common=True)
 		if s:
 			return s
 		else:
-			return 'Other'
+			return u'Other'
 

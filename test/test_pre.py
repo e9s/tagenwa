@@ -78,10 +78,11 @@ class TestPre(unittest.TestCase):
 			(u'--..--',            [u'--',u'..',u'--']),
 			# test sequence of punctuations
 			(u'***',               [u'***']),
-			(u'+=',                [u'+=']),
+			(u'+=',                [u'+',u'=']),
 			(u'-=',                [u'-',u'=']),
 			(u'.=',                [u'.',u'=']),
 			(u',=',                [u',',u'=']),
+			(u'\'."',              [u"'",u'.',u'"']),
 			# test the katakana "chou'onpu" (not hyphen/dash!)
 			(u'ハロー',               [u'ハロー']),
 			# test quotes
