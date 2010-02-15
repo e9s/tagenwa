@@ -60,7 +60,16 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	using a Bayesian estimate of the ngram probability.
 	"""
 	
-	def __init__(self, n=3, ngram_generator=trigrams, nsymbols=26, filepath=None):
+	def __init__(self, n=3, ngram_generator=trigrams, nsymbols=26):
+		"""Create a new language identifier.
+		
+		:param n: size of the ngram
+		:type n: int
+		:param ngram_generator: function returning an iterable of ngrams from a Token
+		:type ngram_generator: function
+		:param nsymbols: average number of symbols of the known languages
+		:type nsymbols: int
+		"""
 		self.states = set([None])
 		self.frequencies = {}
 		self.frequency_totals = {}
@@ -71,10 +80,22 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	
 	def shouldguess(self, token):
+		"""Return True if the token should be guessed, False otherwise."""
 		return not token.isspace() or token.iseol()
 	
 	
 	def guess(self, tokens, initarg=None):
+		"""Guess the language of the tokens by adding a `lang` property
+		to each non whitespace token.
+		
+		If the language cannot be guessed, the value `None` is set.
+		
+		:param tokens: iterable of Tokens
+		:type tokens: iterable
+		:param initarg: parameter sent to loginit for the calculation of the initial probabilities
+		:return: iterable of Tokens with the `lang` property
+		:rtype: iterable
+		"""
 		tokens = list(tokens)
 		
 		# filter tokens for which we are guessing the language
@@ -87,6 +108,8 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	
 	def train(self, tokens, lang):
+		"""Train the emission probabilities by counting the ngram frequencies.
+		"""
 		# add language if not existing
 		if lang not in self.frequencies:
 			self.states.add(lang)
@@ -146,7 +169,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	
 	def score(self, ngrams, lang):
-		"""Return the emission logprob p(ngrams|lang) using the posterior distribution."""
+		"""Return the emission log-probability using the posterior distribution of the ngrams."""
 		# get language frequencies
 		freqs = self.frequencies[lang]
 		total_freq = self.frequency_totals[lang]
