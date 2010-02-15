@@ -128,7 +128,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		ngrams = list(self.ngram_generator(token.text))
 		length = len(ngrams)
 		
-		if length == 0 or not token.text.replace(u'-',u'').isalpha():
+		if length == 0 or not token.isword():
 			# if ngrams is empty all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:
