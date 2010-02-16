@@ -32,7 +32,7 @@ def stem(token):
 		raise ImportError('Function stem(token) needs the PyStemmer module but this module could not be imported.')
 	# check if a language is defined and supported and if the token is alphabetic word
 	lang = token.get(u'lang')
-	if lang is None or lang not in languages or not token.isalpha():
+	if lang is None or lang not in languages or not token.isword():
 		return token
 	# put the token in lower case
 	low = token.text.lower()
