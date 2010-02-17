@@ -50,6 +50,12 @@ class Token(object):
 		self.properties[key] = value
 		return self
 	
+	def delete(self, key):
+		"""Delete the property if it is defined and return the token."""
+		if key in self.properties:
+			del self.properties[key]
+		return self
+	
 	def has(self, key):
 		"""Check if the property is defined."""
 		return key in self.properties
