@@ -143,6 +143,7 @@ class TestToken(unittest.TestCase):
 		testcases = [
 			# letters
 			(u'abcde', True),
+			(u'abc-de', True),
 			(u'é', True),
 			(u'あ', True),
 			# numbers
@@ -168,6 +169,37 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isterm(), repr(i))
+	
+	def test_isword(self):
+		testcases = [
+			# letters
+			(u'abcde', True),
+			(u'abc-de', True),
+			(u'é', True),
+			(u'あ', True),
+			# numbers
+			(u'1', False),
+			(u'①', False),
+			(u'ⅱ', False),
+			(u'四', True),
+			# punctuations
+			(u'a_b', False),
+			(u'_', False),
+			(u'-', False),
+			(u'=', False),
+			(u'.', False),
+			(u':', False),
+			# empty
+			(u'', False),
+			# whitespace
+			(u' ', False),
+			(u'\t', False),
+			(u'\r\n', False),
+			# look of disapproval
+			(u'ಠ_ಠ', False),
+		]
+		for i,e in testcases:
+			self.assertEqual(e, Token(i).isword(), repr(i))
 	
 	def test_haslatin(self):
 		testcases = [
