@@ -46,7 +46,11 @@ class AbstractHMM(object):
 		p = loginit(initarg)
 		T = dict((j, (p[j],[j])) for j in states)
 		# set the previous observable element to the first element
-		ti = iterable.next()
+		try:
+			ti = iterable.next()
+		except StopIteration:
+			# empty iterable
+			return []
 		
 		# search for the best path and the log-probability of the states sequence
 		for tj in iterable:
