@@ -154,6 +154,16 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		if length == 0 or not token.isword():
 			# if ngrams is empty all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
+		elif token.has(u'lang'):
+			# if language is already known
+			known_lang = token.get(u'lang') if token.get(u'lang') in self.states else None
+			scores = dict(
+				(
+					lang,
+					-9999.0
+				) for lang in self.frequencies
+			)
+			scores[known_lang] = 0.0
 		else:
 			scores = dict(
 				(
