@@ -89,6 +89,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		to each non whitespace token.
 		
 		If the language cannot be guessed, the value `None` is set.
+		If the language is already defined, the value is kept unless highly improbable.
 		
 		:param tokens: iterable of Tokens
 		:type tokens: iterable
@@ -155,7 +156,7 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 			# if ngrams is empty all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		elif token.has(u'lang'):
-			# if language is already known
+			# if language is already known, fix it
 			known_lang = token.get(u'lang') if token.get(u'lang') in self.states else None
 			scores = dict(
 				(
