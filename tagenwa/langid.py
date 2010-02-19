@@ -105,7 +105,15 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 		languages = super(NGramHMMLanguageIdentifier,self).viterbi(guesstokens, initarg)
 		# tag tokens for which we guessed the language
 		iterpath = iter(languages)
-		return (t.set(u'lang', iterpath.next()) if self.shouldguess(t) else t for t in tokens)
+		for t in tokens:
+			if self.shouldguess(t):
+				lang = iterpath.next()
+				if not t.has(u'lang'):
+					yield t.set(u'lang', lang)
+				else:
+					yield t
+			else:
+				yield t
 	
 	
 	def train(self, tokens, lang):
@@ -132,6 +140,8 @@ class NGramHMMLanguageIdentifier(AbstractHMM):
 	
 	def loginit(self, initarg):
 		"""Return the initial log-probability of each language."""
+		if initarg:
+			return initarg
 		# all languages are equally probable
 		return dict((lang,0.0) for lang in self.states)
 	
