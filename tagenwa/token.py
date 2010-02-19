@@ -102,8 +102,12 @@ class Token(object):
 		return self._copy_and_apply_to_text(copycase)
 	def lower(self):
 		return self._copy_and_apply_to_text(unicode.lower)
+	def lstrip(self, chars):
+		return self._copy_and_apply_to_text(unicode.lstrip, chars)
 	def strip(self, chars):
 		return self._copy_and_apply_to_text(unicode.strip, chars)
+	def rstrip(self, chars):
+		return self._copy_and_apply_to_text(unicode.rstrip, chars)
 	def swapcase(self):
 		return self._copy_and_apply_to_text(unicode.swapcase)
 	def title(self):
