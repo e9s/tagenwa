@@ -42,9 +42,11 @@ class AbstractHMM(object):
 		logtrans = self.logtrans
 		states = self.states
 		
-		# set the initial path and the log-probabilities of the first element
+		# set the log-probabilities of the first element
 		p = loginit(initarg)
-		T = dict((j, (p[j],[j])) for j in states)
+		P = dict((j, p[j]) for j in states)
+		# initialize the matrix of best previous elements
+		V = []
 		# set the previous observable element to the first element
 		try:
 			ti = iterable.next()
@@ -54,20 +56,29 @@ class AbstractHMM(object):
 		
 		# search for the best path and the log-probability of the states sequence
 		for tj in iterable:
-			U = {}
+			Q = {}
+			W = {}
 			pe = logemit(tj)
 			for j in states:
-				# get the best path until state "j" (excluded) and its log-probability
+				# save the best previous element until state "j" (excluded) and its log-probability
 				pt = logtrans(j,ti,tj)
-				logprob,i = max( (T[i][0] + pt[i], i) for i in states)
-				# save the new path until "j" (included) and its log-probability
-				U[j] = (logprob + pe[j], T[i][1] + [j])
-			T = U
+				logprob, W[j] = max( (P[i] + pt[i], i) for i in states)
+				# save the log-probability until "j" (included)
+				Q[j] = logprob + pe[j]
+			# update the log-probability and save the list of best previous elements
+			P = Q
+			V.append(W)
 			# copy previous state
 			ti = tj
 		
-		# get the best path and its log-probability
-		logprob, path = max(T[i] for i in states)
+		# reconstruct the Viterbi path from the matrix of previous elements
+		logprob, j = max((P[i],i) for i in states)
+		path = [j]
+		for t in xrange(len(V)-1,-1,-1):
+			i = V[t][j]
+			path.append(i)
+			j = i
+		path.reverse()
 		
 		# return the Viterbi path
 		return path
