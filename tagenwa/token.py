@@ -94,7 +94,7 @@ class Token(object):
 	def __getitem__(self, key):
 		return self.text[key]
 	def __getslice__(self, *slice):
-		return self.self._copy_and_apply_to_text(unicode.__getslice__, *slice)
+		return self._copy_and_apply_to_text(unicode.__getslice__, *slice)
 	
 	def __add__(self, y):
 		return self._copy_and_apply_to_text(unicode.__add__, y)
