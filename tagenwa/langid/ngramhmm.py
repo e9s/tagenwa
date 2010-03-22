@@ -9,7 +9,7 @@ __license__ = "MIT"
 from tagenwa.hmm import AbstractHMM
 
 
-class NGramHMMLanguageIdentifier(AbstractHMM):
+class NgramHMMLanguageIdentifier(AbstractHMM):
 	"""Language identifier using a hidden markov model for
 	the language identification of the sequence of tokens.  The probability
 	of emission in the hidden markov model is calculated
