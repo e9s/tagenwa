@@ -116,7 +116,7 @@ def copycase(text, reference):
 	return text
 
 
-def sub(iterable, matchingset, replace, key=None, maxlength=None):
+def sub(iterable, match, replace, maxlength):
 	"""
 	Substitute continuous elements in the iterable.
 	
@@ -143,28 +143,22 @@ def sub(iterable, matchingset, replace, key=None, maxlength=None):
 	
 	:param iterable: iterable with elements to substitute
 	:type iterable: iterable
-	:param matchingset: set or dict of keys
+	:param match: function returning True if the tuple of consecutive elements should be replaced
+	:type match: function
 	:param replace: function returning an iterable of replacement elements
 	:type replace: function
-	:param key: function accepting a tuple of consecutive elements and returning a key
-	:type key: function
 	:param maxlength: maximum length of consecutive elements to check 
 	:type maxlength: int
 	:return: iterable of elements
 	:rtype: iterable
 	"""
-	if key is None:
-		key = lambda x:x
-	if maxlength is None:
-		maxlength = max(len(k) for k in matchingset)
-	
 	tuples = sliding_tuples(iterable, maxlength, filllead=False, filltail=True)
 	for tu0 in tuples:
 		replacing = False
 		# check each sub-tuple
 		for length in xrange(maxlength, 0, -1):
 			tu = tuple(tu0[:length])
-			if key(tu) in matchingset:
+			if match(tu):
 				replacing = True
 				# yield the replacing elements
 				for r in replace(tu):
