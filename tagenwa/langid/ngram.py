@@ -11,7 +11,7 @@ from collections import defaultdict
 from tagenwa.util import sliding_tuples
 
 
-def ngrams(n, word):
+def ngrams(n, token):
 	"""Return an iterator of n-grams
 	
 	N-grams where the middle item(s) are not in the text are filtered out
@@ -20,8 +20,8 @@ def ngrams(n, word):
 	
 	:param n: size of the n-grams
 	:type n: int
-	:param word: word from which n-grams should be generated
-	:type word: unicode
+	:param token: token from which n-grams should be generated
+	:type token: Token
 	:return: iterable of n-grams
 	:rtype: generator of tuples
 	"""
@@ -35,7 +35,7 @@ def ngrams(n, word):
 		check_not_none = [(n - 1) / 2] if n % 2 else [n / 2 -1, n / 2]
 	
 	# Return the generator of ngrams
-	return (tu for tu in sliding_tuples(word, n) if all(tu[i] is not None for i in check_not_none))
+	return (tu for tu in sliding_tuples(token.text, n) if all(tu[i] is not None for i in check_not_none))
 
 
 
@@ -55,6 +55,11 @@ class NgramLanguageIdentifier(object):
 		self.frequency_totals = {}
 		self.ngram_generator = ngram_generator if ngram_generator else lambda x: ngrams(n, x)
 	
+	def get_known_languages(self):
+		return frequencies.keys()
+	
+	def ngrams(self, token):
+		return ngram_generator(token)
 	
 	def train(self, lang, tokens):
 		"""Train the language identifier on the tokens."""
