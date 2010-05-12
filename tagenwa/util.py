@@ -120,17 +120,16 @@ def sub(iterable, match, replace, maxlength):
 	"""
 	Substitute continuous elements in the iterable.
 	
-	The set or dictionary `matchingset` contains tuples for which a replacement
-	is to be done.
-	The `key` function transforms a tuple of continuous elements into a key that
-	is contained in the `matchingset` if the elements have to be replaced.
-	By default, the `key` function just return the tuple of continous elements.
+	The `match` function returns a boolean indicating if the continuous elements
+	must be replaced.
 	The `replace` function returns an iterable of elements to use as replacement.
 	
-	>>> matching = set([('b','c'),('b','c','f')])
+	>>> dictionary = set([('b','c'),('b','c','f')])
+	>>> match = lambda x:x in dictionary
 	>>> # replace() joins characters together and converts them to upper case
 	>>> replace = lambda x:[''.join(x).upper()]
-	>>> list(sub('abcde', matching, replace=replace))
+	>>> maxlength = max(len(t) for t in dictionary)
+	>>> list(sub('abcde', match, replace, maxlength))
 	['a', 'BC', 'd', 'e']
 	
 	The `sub` function iterates several times over the iterable,

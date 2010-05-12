@@ -115,7 +115,9 @@ class TestUtil(unittest.TestCase):
 		replace = lambda x:[''.join(x).upper(),'X']
 		key = lambda x:''.join(x) if None not in x else None
 		for i,s,e in testcases:
-			self.assertEqual(e, list(sub(i, s, replace=replace, key=key)))
+			match = lambda x:key(x) in s
+			maxlength = max(len(t) for t in s)
+			self.assertEqual(e, list(sub(i, match, replace, maxlength)))
 
 
 def suite():
