@@ -8,6 +8,7 @@ from tagenwa.util import sub
 
 
 class DictionaryRetokenizer(object):
+	"""Dictionary-based retokenizer."""
 	
 	def __init__(self, key=None):
 		self.dictionary = {}
@@ -17,10 +18,12 @@ class DictionaryRetokenizer(object):
 		else:
 			self._key = lambda x:tuple(t.text if hasattr(t,'text') else t for t in x)
 		self._match = lambda x:self._key(x) in self.dictionary
-		self._replace = lambda x:list(self.dictionary[self._key(x)])
+		self._replace = lambda x:list(Token(t) for t in self.dictionary[self._key(x)])
 	
 	def add(self, key, replacement):
 		tuple_key = tuple(key)
+		if tuple_key in self.dictionary:
+			raise KeyError('Key already exists in the dictionary.')
 		self.dictionary[tuple_key] = replacement
 		
 		# update the max length
@@ -35,3 +38,12 @@ class DictionaryRetokenizer(object):
 			self._dictionary_key_maxlength
 		)
 
+
+class MonolingualDictionaryRetokenizer(DictionaryRetokenizer):
+	"""Dictionary-based retokenizer that only accepts tokens from a specific language."""
+
+	def __init__(self, lang, key=None):
+		DictionaryRetokenizer.__init__(self, key)
+		self._match = lambda x:self._key(x) in self.dictionary \
+			and None not in x \
+			and all(i.get(u'lang') == lang for i in x)
