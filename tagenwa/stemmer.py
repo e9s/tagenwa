@@ -37,4 +37,22 @@ def stem(token):
 	# put the token in lower case
 	low = token.text.lower()
 	return token.set(u'stem', stemmers[lang].stemWord(low))
+
+
+def stem_word(word, lang):
+	"""Return the stem of a word.
+	
+	:param word: the word in lower case
+	:type word: unicode
+	:param lang: the two-letter iso 639-1 code of the language
+	:param lang: unicode
+	:rtype unicode
+	"""
+	# assert that PyStemmer is imported
+	if not imported_stemmer:
+		raise ImportError('Function stem(token) needs the PyStemmer module but this module could not be imported.')
+	# check if a language is defined and supported
+	if lang not in languages:
+		raise KeyError('No stemmer exists for this language.')
+	return stemmers[lang].stemWord(word)
 	
