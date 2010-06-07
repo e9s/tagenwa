@@ -23,12 +23,15 @@ class DictionaryRetokenizer(object):
 	def add(self, key, replacement):
 		tuple_key = tuple(key)
 		if tuple_key in self.dictionary:
-			raise KeyError('Key already exists in the dictionary.')
+			raise KeyError('Key %s already exists in the dictionary.' % repr(key))
 		self.dictionary[tuple_key] = replacement
 		
 		# update the max length
 		if len(tuple_key) > self._dictionary_key_maxlength:
 			self._dictionary_key_maxlength = len(tuple_key)
+	
+	def key(self, data):
+		return self._key(data)
 	
 	def retokenize(self, tokens):
 		return sub(
