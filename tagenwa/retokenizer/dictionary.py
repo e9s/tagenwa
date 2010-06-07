@@ -33,6 +33,9 @@ class DictionaryRetokenizer(object):
 	def key(self, data):
 		return self._key(data)
 	
+	def value(self, key):
+		return self.dictionary[key]
+
 	def retokenize(self, tokens):
 		return sub(
 			tokens,
