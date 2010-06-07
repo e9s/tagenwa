@@ -167,7 +167,9 @@ def sub(iterable, match, replace, maxlength):
 					for j in xrange(length-1):
 						tuples.next()
 				except:
-					continue
+					pass
+				# do not check further for sub-tuple
+				break
 		# yield the original element if no replacement
 		if not replacing:
 			yield tu0[0]

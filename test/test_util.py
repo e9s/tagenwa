@@ -107,10 +107,19 @@ class TestUtil(unittest.TestCase):
 	
 	def test_sub_string(self):
 		testcases = [
+			# simple
 			('abcde',set(['bc']),['a','BC','X','d','e']),
+			('abcde',set(['bc','xx']),['a','BC','X','d','e']),
+			# first position
+			('abcde',set(['ab','xx']),['AB','X','c','d','e']),
+			# last position
+			('abcde',set(['de','xx']),['a','b','c','DE','X']),
+			# overlap
 			('abcde',set(['de','abcd']),['ABCD','X','e']),
-			('abcde',set(['de','abce']),['a','b','c','DE','X']),
-			('abcdef',set(['de','abce']),['a','b','c','DE','X','f']),
+			# include
+			('abcde',set(['abcd','bc']),['ABCD','X','e']),
+			('abcde',set(['abcd','ab']),['ABCD','X','e']),
+			('abcde',set(['abcd','cd']),['ABCD','X','e']),
 		]
 		replace = lambda x:[''.join(x).upper(),'X']
 		key = lambda x:''.join(x) if None not in x else None
