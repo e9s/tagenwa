@@ -191,3 +191,18 @@ class Token(object):
 	def __repr__(self):
 		return self.text.encode('unicode_escape')+'{'+', '.join(unicode(k).encode('unicode_escape')+':'+repr(v) for k,v in self.properties.iteritems())+'}'
 
+
+
+###########################################################
+# Useful functions to manipulate tokens
+###########################################################
+
+def set_property(tokens, name, value_function, *args, **kwargs):
+	"""Set the `name` property of an iterable of tokens to the returned value of the `value_function` function.
+	
+	The value of the property is defined by a function call `value_function(token, *args, **kwargs)`.
+	"""
+	return (token.set(name, value_function(token, *args, **kwargs)) for token in tokens)
+
+
+
