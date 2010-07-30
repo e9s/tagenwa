@@ -9,6 +9,36 @@ from itertools import tee, chain, izip, izip_longest
 from collections import defaultdict
 from threading import Lock
 
+
+def split(iterable, separator, include_separator=False):
+	"""Generate an iterable of lists that are separated in the original iterable.
+	
+	Simple usage:
+	>>> list(split(xrange(8), lambda x: not x % 3))
+	[[], [1, 2], [4, 5], [7]]
+	
+	Set include_separator to True:
+	>>> list(split(xrange(8), lambda x: not x % 3, include_separator=True))
+	[[0], [1, 2, 3], [4, 5, 6], [7]]
+	
+	:param iterable: an iterable
+	:param separator: a function that returns True if the element is a separator
+	:type length: function
+	:param include_separator: True if the separator should also be returned (default is False)
+	:type include_separator: bool
+	"""
+	buffer = []
+	for i in iterable:
+		if not separator(i):
+			buffer.append(i)
+		else:
+			if include_separator:
+				buffer.append(i)
+			yield buffer
+			buffer = []
+	yield buffer
+
+
 def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
 	"""Generate an iterable of tuples of consecutive items from the iterable.
 	
@@ -23,10 +53,10 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 	:param iterable: an iterable
 	:param length: the length of the tuples to return
 	:type length: int
-	:param fillvalue: the value to used for filling when the tuple is partially outside of the iterable (default None)
-	:param filllead: True if partial tuples should be returned at the beginning (default True)
+	:param fillvalue: the value to used for filling when the tuple is partially outside of the iterable (default is None)
+	:param filllead: True if partial tuples should be returned at the beginning (default is True)
 	:type filllead: bool
-	:param filltail: True if partial tuples should be returned at the end (default True)
+	:param filltail: True if partial tuples should be returned at the end (default is True)
 	:type filltail: bool
 	:return: iterable of tuples
 	:rtype: generator
