@@ -10,15 +10,13 @@ from tagenwa.util import sub
 class DictionaryRetokenizer(object):
 	"""Dictionary-based retokenizer."""
 	
-	def __init__(self, key=None):
+	def __init__(self, key=None, replace=None):
 		self.dictionary = {}
 		self._dictionary_key_maxlength = 0
-		if key is not None:
-			self._key = key
-		else:
-			self._key = lambda x:tuple(t.text if hasattr(t,'text') else t for t in x)
+		
+		self._key = key if key is not None else lambda x:tuple(t.text if hasattr(t,'text') else t for t in x)
 		self._match = lambda x:self._key(x) in self.dictionary
-		self._replace = lambda x:list(Token(t) for t in self.dictionary[self._key(x)])
+		self._replace = replace if replace is not None else lambda x:list(Token(t) for t in self.dictionary[self._key(x)])
 	
 	def add(self, key, replacement):
 		tuple_key = tuple(key)
@@ -48,8 +46,8 @@ class DictionaryRetokenizer(object):
 class MonolingualDictionaryRetokenizer(DictionaryRetokenizer):
 	"""Dictionary-based retokenizer that only accepts tokens from a specific language."""
 
-	def __init__(self, lang, key=None):
-		DictionaryRetokenizer.__init__(self, key)
+	def __init__(self, lang, key=None, replace=None):
+		DictionaryRetokenizer.__init__(self, key, replace)
 		self._match = lambda x:self._key(x) in self.dictionary \
 			and None not in x \
 			and all(i.get(u'lang') == lang for i in x)
