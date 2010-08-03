@@ -27,6 +27,16 @@ class Trie(object):
 		node[0], node[1] = value, True
 	
 	
+	def remove(self, key):
+		"""Remove the key from the trie."""
+		try:
+			node = self._get_node(key)
+		except KeyError:
+			raise KeyError('Key %s not found' % repr(key))
+		# reset the node
+		node[0], node[1] = self.default, False
+	
+	
 	def get(self, key):
 		"""Return the value of the given key or the trie's default value if the key is not found.
 		"""

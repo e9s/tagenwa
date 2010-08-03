@@ -33,6 +33,23 @@ class TestTrie(unittest.TestCase):
 		self.assertEqual(trie.get('abcde'), None)
 	
 	
+	def test_remove(self):
+		trie = self.trie
+		
+		trie.remove('abc')
+		# test existing key
+		self.assertEqual(trie.get('ab'), 2)
+		self.assertEqual(trie.get('abc'), None)
+		self.assertEqual(trie.get('abcd'), 4)
+		self.assertEqual(trie.get('xyz'), 999)
+		
+		# test missing key
+		self.assertEqual(trie.get(''), None)
+		self.assertEqual(trie.get('a'), None)
+		self.assertEqual(trie.get('abx'), None)
+		self.assertEqual(trie.get('abcde'), None)
+	
+	
 	def test_find_prefix(self):
 		trie = self.trie
 		
