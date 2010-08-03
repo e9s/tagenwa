@@ -7,6 +7,7 @@ __version__ = "0.1"
 __license__ = "MIT"
 
 from collections import defaultdict
+from math import log, log1p
 
 from tagenwa.util import sliding_tuples
 
@@ -54,12 +55,14 @@ class NgramLanguageIdentifier(object):
 		self.frequencies = {}
 		self.frequency_totals = {}
 		self.ngram_generator = ngram_generator if ngram_generator else lambda x: ngrams(n, x)
+		self.prior = prior
+		self.smoothing_coefficient = smoothing_coefficient
 	
 	def get_known_languages(self):
-		return frequencies.keys()
+		return self.frequencies.keys()
 	
 	def ngrams(self, token):
-		return ngram_generator(token)
+		return self.ngram_generator(token)
 	
 	def train(self, lang, tokens):
 		"""Train the language identifier on the tokens."""
@@ -81,22 +84,23 @@ class NgramLanguageIdentifier(object):
 		# Update the ngrams frequencies
 		frequencies_lang = self.frequencies[lang]
 		for ngram in frequency:
-			frequencies_lang[ngram] = freqs.get(ngram, 0) + frequency[ngram]
+			frequencies_lang[ngram] = frequencies_lang.get(ngram, 0) + frequency[ngram]
 		# Update the total frequency
-		self.frequencies_lang[lang] += sum(frequency.itervalues())
+		self.frequency_totals[lang] += sum(frequency.itervalues())
 	
 	
 	def estimate(self, token):
 		"""Estimate the log probability of each known language for the token."""
-		ngrams = list(self.ngram_generator(token.text))
+		ngrams = list(self.ngram_generator(token))
 		estimates = ((lang, self._estimate(lang, ngrams)) for lang in self.frequencies)
-		return dict(k,v for k,v in estimates if v is not None)
+		return dict((k,v) for k,v in estimates if v is not None)
 	
 	
 	def _estimate(self, lang, ngrams):
 		"""Estimate the log probability of the token matching the language."""
 		# No estimate if no ngrams
-		if len(ngrams) == 0:
+		length = len(ngrams)
+		if not length:
 			return None
 		# Get language frequencies
 		frequencies_lang = self.frequencies[lang]
@@ -107,6 +111,6 @@ class NgramLanguageIdentifier(object):
 		# Calculate log probability
 		return (
 			sum(log1p(alpha + frequencies_lang.get(ngram, 0.0)) for ngram in ngrams)
-			- log(beta + frequency_totals_lang) * len(ngrams)
+			- log(beta + frequency_totals_lang) * length
 		)
 

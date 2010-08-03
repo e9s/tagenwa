@@ -6,6 +6,8 @@ Hidden Markov language identifier using n-gram emission probablities.
 __version__ = "0.1"
 __license__ = "MIT"
 
+from math import log, log1p
+
 from tagenwa.hmm import AbstractHMM
 
 
@@ -51,7 +53,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		# filter tokens for which we are guessing the language
 		guesstokens = (t for t in tokens if self.shouldguess(t))
 		
-		languages = super(NGramHMMLanguageIdentifier, self).viterbi(guesstokens, initarg)
+		languages = super(NgramHMMLanguageIdentifier, self).viterbi(guesstokens, initarg)
 		# tag tokens for which we guessed the language
 		iterpath = iter(languages)
 		for t in tokens:
@@ -87,6 +89,8 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 	def logemit(self, token):
 		"""Return the emission log-probability of each language"""
 		
+		length = len(list(self.token_identifier.ngrams(token)))
+		
 		if token.has(u'lang'):
 			# If language is already known, fix it
 			known_lang = token.get(u'lang') if token.get(u'lang') in self.states else None
@@ -97,11 +101,11 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		elif not token.isword():
 			# If tokens is not a word, all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
-		elif not len(self.token_identifier.ngrams(token)):
+		elif not length:
 			# If tokens has no n-grams, all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:
-			scores = self.token_identifier.guess(token)
+			scores = self.token_identifier.estimate(token)
 			scores = dict(
 				(lang, scores.get(lang, self.logprob_zero)) for lang in self.states
 			)
