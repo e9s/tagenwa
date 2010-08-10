@@ -28,11 +28,7 @@ def block(c, default=None):
 	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character.
 	"""
-	# assert argument is a single unicode character
-	if not isinstance(c, unicode):
-		raise TypeError('block() argument must be unicode, not '+repr(type(c)))
-	if len(c) != 1:
-		raise TypeError('block() argument must be a single unicode character')
+	_assert_unicode_character(c)
 	
 	o = ord(c)
 	return _get_ucd_value(o, _UCD_BLOCKS, default)
@@ -54,11 +50,7 @@ def script(c, default=None, avoid_common=False):
 	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character
 	"""
-	# assert argument is a single unicode character
-	if not isinstance(c, unicode):
-		raise TypeError('script() argument must be unicode, not '+repr(type(c)))
-	if len(c) != 1:
-		raise TypeError('script() argument must be a single unicode character')
+	_assert_unicode_character(c)
 	
 	# search script name in the database
 	o = ord(c)
@@ -70,6 +62,14 @@ def script(c, default=None, avoid_common=False):
 		return majority if majority else u'Common'
 	
 	return scriptname
+
+
+def _assert_unicode_character(c):
+	"""Assert that the argument is a single unicode character"""
+	if not isinstance(c, unicode):
+		raise TypeError('Argument must be unicode, not '+repr(type(c)))
+	if len(c) != 1:
+		raise TypeError('Argument must be a single unicode character')
 
 
 def _get_ucd_value(o, data, default=None):

@@ -27,6 +27,18 @@ class TestScript(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(block(i),e)
 	
+	def test_block_error(self):
+		"""Test block() with invalid argument"""
+		self.assertRaises(TypeError, block, (5,))
+		self.assertRaises(TypeError, block, ('a',))
+		self.assertRaises(TypeError, block, (u'abc',))
+	
+	def test_script_error(self):
+		"""Test script() with invalid argument"""
+		self.assertRaises(TypeError, script, (5,))
+		self.assertRaises(TypeError, script, ('a',))
+		self.assertRaises(TypeError, script, (u'abc',))
+	
 	def test_latin_letters(self):
 		"""Test script: Latin"""
 		testcases = u'aAåÅăĂąĄẬậɑⱭɐⱯæÆéÉèÈȄȅḿḾøØœŒÿŸ'
