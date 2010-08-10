@@ -16,6 +16,7 @@ class Trie(object):
 		the default value is None.
 		"""
 		self.default = default
+		# node structure is 'value', 'defined', 'children'
 		self.root = [self.default, False, {}]
 	
 	
@@ -37,30 +38,41 @@ class Trie(object):
 		node[0], node[1] = self.default, False
 	
 	
+	def __contains__(self, key):
+		"""Return True if the key is in the trie.
+		"""
+		try:
+			value = self._get_node(key)[1]
+		except KeyError:
+			value = False
+		return value
+	
+	
 	def get(self, key):
 		"""Return the value of the given key or the trie's default value if the key is not found.
 		"""
 		try:
-			node = self._get_node(key)
+			value = self._get_node(key)[0]
 		except KeyError:
-			return self.default
-		return node[0]
+			value = self.default
+		return value
 	
 	
 	def find_prefix(self, key):
-		"""Find the longuest prefix and return the prefix and its value.
-		
-		Return the tuple (prefix, value).
+		"""Return the longuest prefix defined in the trie.
 		"""
+		best_prefix = []
+		path_prefix = []
 		node = self.root
-		prefix = []
 		for k in key:
-			try:
+			if k in node[2]:
 				node = node[2][k]
-				prefix.append(k)
-			except KeyError:
+				path_prefix.append(k)
+				if node[1]:
+					best_prefix = [c for c in path_prefix]
+			else:
 				break
-		return (prefix, node[0])
+		return best_prefix
 	
 	
 	def _get_node(self, key):
@@ -70,6 +82,10 @@ class Trie(object):
 			node = node[2][k]
 		return node
 	
+	
+	def __len__(self):
+		"""Return the number of keys in the trie."""
+		return sum(1 for k in self.keys())
 	
 	def keys(self, key=tuple()):
 		"""Return the list of keys as tuples.
