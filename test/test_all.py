@@ -17,5 +17,8 @@ all_tests = unittest.TestSuite([
 	test_retokenizer_dictionary.suite(),
 ])
 
-if __name__ == '__main__':
+def test_all():
 	unittest.TextTestRunner(verbosity=2).run(all_tests)
+
+if __name__ == '__main__':
+	test_all()
