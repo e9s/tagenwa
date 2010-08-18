@@ -75,9 +75,8 @@ class AbstractHMM(object):
 		logprob, j = max((P[i],i) for i in states)
 		path = [j]
 		for t in xrange(len(V)-1,-1,-1):
-			i = V[t][j]
-			path.append(i)
-			j = i
+			j = V[t][j]
+			path.append(j)
 		path.reverse()
 		
 		# return the Viterbi path

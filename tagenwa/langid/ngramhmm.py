@@ -83,7 +83,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 			v_same, v_change = log1p(-1E-9), log(1E-9)
 		else:
 			v_same, v_change = log1p(-1E-6), log(1E-6)
-		return dict((lang1,v_change if lang1 != lang2 else v_same) for lang1 in self.states)
+		return dict((lang1, v_change if lang1 != lang2 else v_same) for lang1 in self.states)
 	
 	
 	def logemit(self, token):
@@ -98,11 +98,8 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 				(lang, self.logprob_zero) for lang in self.states
 			)
 			scores[known_lang] = 0.0
-		elif not token.isword():
-			# If tokens is not a word, all languages are equally probable
-			scores = dict((lang, 0.0) for lang in self.states)
-		elif not length:
-			# If tokens has no n-grams, all languages are equally probable
+		elif not token.isword() or not length:
+			# If tokens is not a word or has no n-grams, all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:
 			scores = self.token_identifier.estimate(token)
