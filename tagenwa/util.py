@@ -3,6 +3,7 @@
 Useful functions for tokenization
 
 """
+import functools
 
 from itertools import tee, chain, izip, izip_longest
 # INFO: izip_longest is new in Python 2.6
@@ -219,24 +220,22 @@ def memoize(size=512):
 	The `memoize` decorator is written to be thread-safe but the decorator
 	does not render the memoized function thread-safe.
 	
-	:param size: maximum size of the LFU cache
-	:type size: int
+	:param size: maximum size of the LFU cache or None if no maximum size
+	:type size: int or None
 	"""
 	def decorator(f):
 		cache = {}
 		lfukeys = []
 		lock = Lock()
+		@functools.wraps(f)
 		def wrapper(*args,**kwargs):
 			key = (args,frozenset(kwargs.items()))
 			# get the value (and remove the key from the LFU list if found)
 			lock.acquire()
 			if key in cache:
 				value = cache[key]
-				try:
+				if size is not None:
 					lfukeys.remove(key)
-				except ValueError:
-					# this should never happen
-					pass
 				lock.release()
 			else:
 				lock.release()
@@ -246,20 +245,19 @@ def memoize(size=512):
 				lock.acquire()
 				cache[key] = value
 				lock.release()
-			# add the key to the top of the LFU list
-			lock.acquire()
-			lfukeys.append(key)
-			# delete the least frequently used item
-			if len(lfukeys) > size:
-				del cache[lfukeys.pop(0)]
-			lock.release()
+			
+			if size is not None:
+				# add the key to the top of the LFU list
+				lock.acquire()
+				lfukeys.append(key)
+				# delete the least frequently used item
+				if len(lfukeys) > size:
+					del cache[lfukeys.pop(0)]
+				lock.release()
+			
 			return value
 		# store the original function
 		wrapper._original = f
-		# copy the magic values of the original function
-		wrapper.__doc__ = f.__doc__
-		wrapper.__name__ = f.__name__
-		wrapper.__module__ = f.__module__
 		return wrapper
 	return decorator
 	
