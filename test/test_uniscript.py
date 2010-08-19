@@ -46,6 +46,13 @@ class TestScript(unittest.TestCase):
 			self.assertEqual(script(c, avoid_common=True), 'Latin')
 			self.assertEqual(script(c, avoid_common=False), 'Latin')
 	
+	def test_latin_letters_cached(self):
+		"""Test script: Latin"""
+		testcases = u'aabbaaaa'
+		for c in testcases:
+			self.assertEqual(script(c, avoid_common=True), 'Latin')
+			self.assertEqual(script(c, avoid_common=False), 'Latin')
+	
 	def test_cjk(self):
 		"""Test script: Han"""
 		testcases = u'気'
