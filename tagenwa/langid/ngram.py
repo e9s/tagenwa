@@ -92,16 +92,13 @@ class NgramLanguageIdentifier(object):
 	def estimate(self, token):
 		"""Estimate the log probability of each known language for the token."""
 		ngrams = list(self.ngram_generator(token))
-		estimates = ((lang, self._estimate(lang, ngrams)) for lang in self.frequencies)
-		return dict((k,v) for k,v in estimates if v is not None)
+		if not ngrams:
+			return {}
+		return dict((lang, self._estimate(lang, ngrams)) for lang in self.frequencies)
 	
 	
 	def _estimate(self, lang, ngrams):
 		"""Estimate the log probability of the token matching the language."""
-		# No estimate if no ngrams
-		length = len(ngrams)
-		if not length:
-			return None
 		# Get language frequencies
 		frequencies_lang_get = self.frequencies[lang].get
 		# Precalculate prior
@@ -110,6 +107,6 @@ class NgramLanguageIdentifier(object):
 		# Calculate log probability
 		return (
 			sum(log1p(alpha + frequencies_lang_get(ngram, 0.0)) for ngram in ngrams)
-			- log(beta + self.frequency_totals[lang]) * length
+			- log(beta + self.frequency_totals[lang]) * len(ngrams)
 		)
 
