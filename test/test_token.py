@@ -170,6 +170,14 @@ class TestToken(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isterm(), repr(i))
 	
+	def test_isterm_cached(self):
+		t = Token(u'abc')
+		self.assertTrue(t.isterm())
+		self.assertTrue(t.isterm())
+		t.text = u'...'
+		self.assertFalse(t.isterm())
+		self.assertFalse(t.isterm())
+	
 	def test_isword(self):
 		testcases = [
 			# letters
