@@ -59,10 +59,10 @@ class AbstractHMM(object):
 			Q = {}
 			W = {}
 			pe = logemit(tj)
+			pt = logtrans(ti,tj)
 			for j in states:
 				# save the best previous element until state "j" (excluded) and its log-probability
-				pt = logtrans(j,ti,tj)
-				logprob, W[j] = max( (P[i] + pt[i], i) for i in states)
+				logprob, W[j] = max( (P[i] + pt[i,j], i) for i in states)
 				# save the log-probability until "j" (included)
 				Q[j] = logprob + pe[j]
 			# update the log-probability and save the list of best previous elements
@@ -93,13 +93,12 @@ class AbstractHMM(object):
 		raise NotImplementedError()
 	
 	
-	def logtrans(self, state2, element1, element2):
-		"""Return the transition log-probability from each previous state
+	def logtrans(self, element1, element2):
+		"""Return the transition log-probability of each state pair
 		
-		:param state2: current state
 		:param element1: previous observable element
 		:param element2: current observable element
-		:return: transition log-probability from each previous state
+		:return: transition log-probability of each state pair
 		:rtype: dict
 		"""
 		raise NotImplementedError()

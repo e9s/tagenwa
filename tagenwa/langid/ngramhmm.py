@@ -75,15 +75,15 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		return dict((lang,0.0) for lang in self.states)
 	
 	
-	def logtrans(self, lang2, token1, token2):
-		"""Return the transition log-probability from each language"""
+	def logtrans(self, token1, token2):
+		"""Returns the transition log-probability of each language pair"""
 		if token1.isterm():
 			v_same, v_change = log1p(-1E-15), log(1E-15)
 		elif not token1.isterm() and token2.isterm():
 			v_same, v_change = log1p(-1E-9), log(1E-9)
 		else:
 			v_same, v_change = log1p(-1E-6), log(1E-6)
-		return dict((lang1, v_change if lang1 != lang2 else v_same) for lang1 in self.states)
+		return dict(((lang1,lang2), v_change if lang1 != lang2 else v_same) for lang1 in self.states for lang2 in self.states)
 	
 	
 	def logemit(self, token):
