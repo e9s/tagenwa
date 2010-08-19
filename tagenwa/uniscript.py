@@ -30,11 +30,9 @@ def block(c, default=None):
 	"""
 	_assert_unicode_character(c)
 	
-	o = ord(c)
-	return _get_ucd_value(o, _UCD_BLOCKS, default)
+	return _get_ucd_value(ord(c), _UCD_BLOCKS, default)
 
 
-@memoize(size=512)
 def script(c, default=None, avoid_common=False):
 	"""Return the script of the character or the default value if no script found.
 	
@@ -53,8 +51,7 @@ def script(c, default=None, avoid_common=False):
 	_assert_unicode_character(c)
 	
 	# search script name in the database
-	o = ord(c)
-	scriptname = _get_ucd_value(o, _UCD_SCRIPTS, default)
+	scriptname = _get_ucd_value(ord(c), _UCD_SCRIPTS, default)
 	
 	# replace common by the majority script of the block, if needed
 	if scriptname == u'Common' and avoid_common:
@@ -87,7 +84,7 @@ def _get_ucd_value(o, data, default=None):
 """UCD data file regex pattern"""
 _ucd_pattern = re.compile(r'(?P<start>[0-9A-F]+)(?:\.\.(?P<end>[0-9A-F]+))? *;(?P<value>[^#]*)(?:#|\n)')
 
-def _read_ucd_datafile(filename, folder='ucd510'):
+def _read_ucd_datafile(filename, folder='ucd510', compact=False):
 	"""Read UCD data file."""
 	filepath = joinpath(abspath(dirname(__file__)),folder,filename)
 	data = []
@@ -100,11 +97,24 @@ def _read_ucd_datafile(filename, folder='ucd510'):
 					end = int(match.group('end'),16) if match.group('end') else start
 					value = match.group('value').strip()
 					data.append((start,end,value))
+	data.sort()
+	if compact:
+		#  compact the consecutive entries with the same value into one entry
+		compacted = []
+		iterator = iter(data)
+		buffer = iterator.next()
+		for d in iterator:
+			if buffer[2] == d[2] and buffer[1]+1 == d[0]:
+				buffer = (buffer[0], d[1], buffer[2])
+			else:
+				compacted.append(buffer)
+				buffer = d
+		return compacted
 	return data
 
 # initialize blocks and script database
 _UCD_BLOCKS = _read_ucd_datafile('Blocks.txt')
-_UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt')
+_UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt', compact=True)
 
 
 def _get_majority_scripts(folder='ucd510'):
