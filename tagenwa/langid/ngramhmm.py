@@ -98,7 +98,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 				(lang, self.logprob_zero) for lang in self.states
 			)
 			scores[known_lang] = 0.0
-		elif not token.isword() or not length:
+		elif not length or not token.isword():
 			# If tokens is not a word or has no n-grams, all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:

@@ -103,14 +103,13 @@ class NgramLanguageIdentifier(object):
 		if not length:
 			return None
 		# Get language frequencies
-		frequencies_lang = self.frequencies[lang]
-		frequency_totals_lang = self.frequency_totals[lang]
+		frequencies_lang_get = self.frequencies[lang].get
 		# Precalculate prior
 		alpha = self.smoothing_coefficient * self.prior
 		beta = self.smoothing_coefficient
 		# Calculate log probability
 		return (
-			sum(log1p(alpha + frequencies_lang.get(ngram, 0.0)) for ngram in ngrams)
-			- log(beta + frequency_totals_lang) * length
+			sum(log1p(alpha + frequencies_lang_get(ngram, 0.0)) for ngram in ngrams)
+			- log(beta + self.frequency_totals[lang]) * length
 		)
 
