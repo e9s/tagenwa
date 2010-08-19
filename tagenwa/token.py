@@ -6,6 +6,8 @@ Token combining a unicode text and a properties dictionary.
 __version__ = "0.1"
 __license__ = "MIT"
 
+import functools
+
 from uniscript import script
 from util import copycase
 from copy import deepcopy
@@ -26,10 +28,12 @@ class Token(object):
 	def __init__(self, text):
 		"""Create a new Token."""
 		if isinstance(text, unicode):
-			self.text = text
+			self._text = text
+			self._text_properties_cache = {}
 			self.properties = {u'original':text}
 		elif isinstance(text, Token):
-			self.text = text.text
+			self._text = text.text
+			self._text_properties_cache = {}
 			self.properties = deepcopy(text.properties)
 		else:
 			raise TypeError('Only unicode and Token are supported, got %s.' % type(text).__name__)
@@ -38,11 +42,37 @@ class Token(object):
 		"""Create a new Token by copy (optionally with a new text)."""
 		t = Token(self)
 		if text is not None:
-			t.text = text
+			t.set_text(text)
 		return t
 	
 ###########################################################
-# Properties manipulations
+# Text getter and setter
+###########################################################
+	
+	def get_text(self):
+		"""Return the token's text."""
+		return self._text
+
+	def set_text(self, text):
+		"""Set the token's text."""
+		self._text = text
+		# Invalidate the cache
+		self._text_properties_cache = {}
+	
+	text = property(get_text, set_text)
+	
+	def _text_property_caching(f):
+		@functools.wraps(f)
+		def _text_property_wrapper(self):
+			if f.__name__ in self._text_properties_cache:
+				return self._text_properties_cache[f.__name__]
+			value = f(self)
+			self._text_properties_cache[f.__name__] = value
+			return value
+		return _text_property_wrapper
+	
+###########################################################
+# Properties getter and setter
 ###########################################################
 
 	def set(self, key, value):
@@ -70,7 +100,7 @@ class Token(object):
 ###########################################################
 
 	def join(self, iterables):
-		t = Token(self.text.join(iterables))
+		t = Token(self._text.join(iterables))
 		t.properties = copy(self.properties)
 		# join original texts if Tokens
 		t.properties[u'original'] = self.properties[u'original'].join(
@@ -87,14 +117,7 @@ class Token(object):
 	#	return tokens
 	
 	def _copy_and_apply_to_text(self, f, *args, **kwargs):
-		t = Token(self)
-		t.text = f(t.text, *args, **kwargs)
-		return t
-	
-	def __getitem__(self, key):
-		return self.text[key]
-	def __getslice__(self, *slice):
-		return self._copy_and_apply_to_text(unicode.__getslice__, *slice)
+		return self.copy(f(self._text, *args, **kwargs))
 	
 	def __add__(self, y):
 		return self._copy_and_apply_to_text(unicode.__add__, y)
@@ -114,71 +137,107 @@ class Token(object):
 		return self._copy_and_apply_to_text(unicode.title)
 	def upper(self):
 		return self._copy_and_apply_to_text(unicode.upper)
+		
+###########################################################
+# Text slicing
+###########################################################
 	
+	def __getitem__(self, key):
+		return self._text[key]
+	def __getslice__(self, *slice):
+		return self._copy_and_apply_to_text(unicode.__getslice__, *slice)
 	def __iter__(self):
-		return iter(self.text)
+		return iter(self._text)
 
-	def __contains__(self, string):
-		return string in self.text
 	def __eq__(self, y):
 		if isinstance(y, Token):
-			return self.text == y.text and self.properties == y.properties
+			return self._text == y.text and self.properties == y.properties
 		elif isinstance(y, unicode):
-			return self.text == y
+			return self._text == y
+	
+###########################################################
+# Text properties
+###########################################################
+
+	def __contains__(self, string):
+		return string in self._text
+	
 	def __len__(self):
-		return len(self.text)
+		return len(self._text)
+	
 	def endswith(self, string):
-		return self.text.endswith(string)
-	def haslatin(self):
-		return any(script(c, avoid_common=True) == 'Latin' for c in self.text)
+		return self._text.endswith(string)
+	
 	def isalnum(self):
 		"""Return true if all characters in the token are alphanumeric and there is at least one character, false otherwise."""
-		return self.text.isalnum()
+		return self._text.isalnum()
+	
 	def isalpha(self):
 		"""Return true if all characters in the token are alphabetic and there is at least one character, false otherwise."""
-		return self.text.isalpha()
+		return self._text.isalpha()
+	
 	def isdecimal(self):
 		"""Return true if all characters in the token are decimal characters, false otherwise.
 		
 		Decimal characters include digit characters, and all characters that that can be used to form decimal-radix numbers, e.g. U+0660, ARABIC-INDIC DIGIT ZERO."""
-		return self.text.isdecimal()
+		return self._text.isdecimal()
+	
 	def isdigit(self):
 		"""Return true if all characters in the token are digits and there is at least one character, false otherwise."""
-		return self.text.isdigit()
-	def iseol(self):
-		"""Return true if all characters in the token are end-of-line characters and there is at least one character, false otherwise."""
-		return all(c in u'\n\r' for c in self.text)
-	def ishexadecimal(self):
-		"""Return true if the token is of the form 0x[0-9a-fA-F]+, false otherwise."""
-		t = self.text
-		return len(t) > 2 and t[:2] == u'0x' and all(c in u'0123456789abcdefABCDEF' for c in t[2:])
+		return self._text.isdigit()
+	
 	def islower(self):
 		"""Return true if all cased characters in the string are lowercase and there is at least one cased character, false otherwise."""
-		return self.text.islower()
+		return self._text.islower()
+	
 	def isnumeric(self):
 		"""Return true if all characters in the token are numeric characters, false otherwise.
 		
 		Numeric characters include digit characters, and all characters that have the Unicode numeric value property, e.g. U+2155, VULGAR FRACTION ONE FIFTH."""
-		return self.text.isnumeric()
+		return self._text.isnumeric()
+	
 	def isspace(self):
 		"""Return true if all characters in the token are whitespace and there is at least one character, false otherwise."""
-		return self.text.isspace()
-	def isterm(self):
-		"""Return true if any character in the token is a letter or a digit and there is at least one character, false otherwise."""
-		return any(ucategory(c).startswith('L') or ucategory(c) == 'Nd' for c in self.text)
+		return self._text.isspace()
+	
 	def istitle(self):
-		return self.text.istitle()
+		return self._text.istitle()
+	
 	def isupper(self):
 		"""Return true if all cased characters in the string are uppercase and there is at least one cased character, false otherwise."""
-		return self.text.isupper()
+		return self._text.isupper()
+	
 	def startswith(self, string):
-		return self.text.startswith(string)
+		return self._text.startswith(string)
+	
+	
+	@_text_property_caching
+	def haslatin(self):
+		return any(script(c, avoid_common=True) == 'Latin' for c in self._text)
+	
+	@_text_property_caching
+	def iseol(self):
+		"""Return true if all characters in the token are end-of-line characters and there is at least one character, false otherwise."""
+		return all(c in u'\n\r' for c in self._text)
+	
+	@_text_property_caching
+	def ishexadecimal(self):
+		"""Return true if the token is of the form 0x[0-9a-fA-F]+, false otherwise."""
+		t = self._text
+		return len(t) > 2 and t[:2] == u'0x' and all(c in u'0123456789abcdefABCDEF' for c in t[2:])
+	
+	@_text_property_caching
+	def isterm(self):
+		"""Return true if any character in the token is a letter or a digit and there is at least one character, false otherwise."""
+		return any(ucategory(c).startswith('L') or ucategory(c) == 'Nd' for c in self._text)
+	
+	@_text_property_caching
 	def isword(self):
 		"""Return true if the token is a word (only contains letters or dash punctuations), false otherwise."""
 		return all(
-			ucategory(c).startswith('L') or ucategory(c) == 'Pd' for c in self.text
+			ucategory(c).startswith('L') or ucategory(c) == 'Pd' for c in self._text
 		) and not all(
-			ucategory(c) == 'Pd' for c in self.text
+			ucategory(c) == 'Pd' for c in self._text
 		)
 	
 ###########################################################
