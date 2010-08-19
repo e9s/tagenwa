@@ -89,8 +89,6 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 	def logemit(self, token):
 		"""Return the emission log-probability of each language"""
 		
-		length = len(list(self.token_identifier.ngrams(token)))
-		
 		if token.has(u'lang'):
 			# If language is already known, fix it
 			known_lang = token.get(u'lang') if token.get(u'lang') in self.states else None
@@ -98,8 +96,10 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 				(lang, self.logprob_zero) for lang in self.states
 			)
 			scores[known_lang] = 0.0
-		elif not length or not token.isword():
-			# If tokens is not a word or has no n-grams, all languages are equally probable
+			return scores
+		
+		if not token.isword():
+			# If tokens is not a word, all languages are equally probable
 			scores = dict((lang, 0.0) for lang in self.states)
 		else:
 			scores = self.token_identifier.estimate(token)
@@ -108,6 +108,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 			)
 			# Calculate the log-probability of to beat to be classified as a known language
 			# Log-probability of a imaginary uniformly distributed language
+			length = sum(1 for n in self.token_identifier.ngram_generator(token))
 			scores[None] = length * self.logprob_uniform
 		
 		return scores
