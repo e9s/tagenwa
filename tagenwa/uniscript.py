@@ -16,15 +16,30 @@ import cPickle
 
 
 def block(c, default=None):
-	"""Return the Unicode block name of the character or the default value if no block found.
+	u"""Return the Unicode block name of the character or the default value if no block is found.
 	
 	The data is based on the Unicode 5.1.0 database:
 	http://www.unicode.org/Public/5.1.0/ucd/Blocks.txt
 	
-	:param c: single character
+	>>> block(u'a')
+	u'Basic Latin'
+	>>> block(u'_')
+	u'Basic Latin'
+	>>> block(u'é')
+	u'Latin-1 Supplement'
+	>>> script(u'β')
+	u'Greek'
+	>>> script(u'Ж')
+	u'Cyrillic'
+	>>> script(u'あ')
+	u'Hiragana'
+	>>> block(u'気')
+	u'CJK Unified Ideographs'
+	
+	:param c: a single character
 	:type c: unicode
-	:param default: default value (by default, None)
-	:return: block name or the default value
+	:param default: a default value
+	:return: the block name or the default value
 	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character.
 	"""
@@ -33,18 +48,40 @@ def block(c, default=None):
 	return _get_ucd_value(ord(c), _UCD_BLOCKS, default)
 
 
+
 def script(c, default=None, avoid_common=False):
-	"""Return the script of the character or the default value if no script found.
+	u"""Return the script name of the character or the default value if no script is found.
 	
 	The data is based on the Unicode 5.1.0 database:
 	http://www.unicode.org/Public/5.1.0/ucd/Scripts.txt
 	
-	:param c: character
+	If the parameter `avoid_common` is set to True, the `script` function tries to avoid to return the value "Common"
+	by returning for the script name of the majority of the character within the same block as the character `c`.
+	Note that this script name may still be "Common".
+	
+	>>> script(u'a')
+	u'Latin'
+	>>> script(u'_')
+	u'Common'
+	>>> script(u'_', avoid_common = True)
+	u'Latin'
+	>>> script(u'é')
+	u'Latin'
+	>>> script(u'β')
+	u'Greek'
+	>>> script(u'Ж')
+	u'Cyrillic'
+	>>> script(u'あ')
+	u'Hiragana'
+	>>> script(u'気')
+	u'Han'
+	
+	:param c: a single character
 	:type c: unicode
-	:param default: default value (by default, None)
-	:param avoid_common: if True, try to replace the return value 'Common' by the main script of the block it belongs to (by default, False).
+	:param default: a default value
+	:param avoid_common: if True, try to replace the return value 'Common' by the majority script of the containing block
 	:type c: bool
-	:return: script name or the default value
+	:return: the script name or the default value
 	:rtype: unicode
 	:raise TypeError: if the argument is not a single unicode character
 	"""
@@ -61,12 +98,14 @@ def script(c, default=None, avoid_common=False):
 	return scriptname
 
 
+
 def _assert_unicode_character(c):
 	"""Assert that the argument is a single unicode character"""
 	if not isinstance(c, unicode):
 		raise TypeError('Argument must be unicode, not '+repr(type(c)))
 	if len(c) != 1:
 		raise TypeError('Argument must be a single unicode character')
+
 
 
 def _get_ucd_value(o, data, default=None):
@@ -83,6 +122,7 @@ def _get_ucd_value(o, data, default=None):
 
 """UCD data file regex pattern"""
 _ucd_pattern = re.compile(r'(?P<start>[0-9A-F]+)(?:\.\.(?P<end>[0-9A-F]+))? *;(?P<value>[^#]*)(?:#|\n)')
+
 
 def _read_ucd_datafile(filename, folder='ucd510', compact=False):
 	"""Read UCD data file."""
@@ -112,9 +152,11 @@ def _read_ucd_datafile(filename, folder='ucd510', compact=False):
 		return compacted
 	return data
 
+
 # initialize blocks and script database
 _UCD_BLOCKS = _read_ucd_datafile('Blocks.txt')
 _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt', compact=True)
+
 
 
 def _get_majority_scripts(folder='ucd510'):
@@ -155,6 +197,7 @@ def _get_majority_scripts(folder='ucd510'):
 		# save majority dictionary
 		cPickle.dump(majority, open(filepath,'wt'))
 		return majority
+
 
 # initialize majority script of each block
 _MAJORITY_SCRIPTS = _get_majority_scripts()

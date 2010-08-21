@@ -3,6 +3,9 @@ syntax: glob
 *.pyc
 *~
 
+# documentation
+doc/_build
+
 # Komodo Edit project file
 *.kpf
 

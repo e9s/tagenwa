@@ -1,10 +1,15 @@
 # -*- coding: UTF-8 -*-
-import unittest
+import unittest, doctest
 
 from tagenwa.uniscript import script, block
 
 
 class TestScript(unittest.TestCase):
+	
+	def test_uniscript_doctest(self):
+		import tagenwa.uniscript
+		failure_count, test_count = doctest.testmod(tagenwa.uniscript)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.uniscript: %i failed out of %i' % (failure_count, test_count))
 	
 	
 	def test_block(self):

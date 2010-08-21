@@ -9,20 +9,22 @@ __license__ = "MIT"
 
 class AbstractHMM(object):
 	"""Abstract Hidden Markov Model.
-	
-	This abstract HMM implementation provides hooks for the calculation of 
-	the initial, emission and transition probabilities
-	using methods to be overridden.  It is designed to be versatile over
-	easy to use or fast to execute.
-	
-	To be used the following attributes/methods should be overridden:
-	* self.states
-	* self.loginit()
-	* self.logemit()
-	* self.logtrans()
 	"""
 	
 	def __init__(self):
+		"""Create an abstract hidden Markov model.
+		
+		This abstract hidden Markov model implementation provides hooks for the calculation of 
+		the initial, emission and transition probabilities using methods to be overridden.
+		It is designed to be versatile over easy-to-use or fast-to-execute.
+		
+		To be used the following attributes/methods should be overridden:
+		
+		* self.states
+		* self.loginit()
+		* self.logemit()
+		* self.logtrans()
+		"""
 		self.states = set()
 	
 	
@@ -37,13 +39,12 @@ class AbstractHMM(object):
 		"""
 		
 		# shortcuts
-		loginit = self.loginit
 		logemit = self.logemit
 		logtrans = self.logtrans
 		states = self.states
 		
 		# set the log-probabilities of the first element
-		p = loginit(initarg)
+		p = self.loginit(initarg)
 		P = dict((j, p[j]) for j in states)
 		# initialize the matrix of best previous elements
 		V = []
@@ -94,11 +95,11 @@ class AbstractHMM(object):
 	
 	
 	def logtrans(self, element1, element2):
-		"""Return the transition log-probability of each state pair
+		"""Return the transition log-probability of each pair of states
 		
 		:param element1: previous observable element
 		:param element2: current observable element
-		:return: transition log-probability of each state pair
+		:return: transition log-probability of each pair of states
 		:rtype: dict
 		"""
 		raise NotImplementedError()
