@@ -79,6 +79,7 @@ class NgramLanguageIdentifier(object):
 		self.n = n
 		self.frequencies = {}
 		self.frequency_totals = {}
+		self.log_frequencies = {}
 		self.ngram_generator = ngram_generator if ngram_generator else ngram_generator_factory(n)
 		self.prior = prior
 		self.smoothing_coefficient = smoothing_coefficient
@@ -121,6 +122,8 @@ class NgramLanguageIdentifier(object):
 		
 		:return: None
 		"""
+		# Invalidate the cache
+		self.log_frequencies = {}
 		# Add language if not existing
 		if lang not in self.frequencies:
 			self.frequencies[lang] = {}
@@ -153,16 +156,29 @@ class NgramLanguageIdentifier(object):
 			# All languages are equally probable
 			return dict((lang, 0.0) for lang in self.frequencies)
 		
+		assert self.log_frequencies, 'Please first initialize the cache by running the cache_log_frequency() method'
+		
 		# Precalculate prior
 		alpha = self.smoothing_coefficient * self.prior
 		beta = self.smoothing_coefficient * (1.0 - self.prior)
+		log1p_alpha = log1p(alpha)
 		length = len(ngrams)
 		
 		estimates = {}
 		for lang in self.frequencies:
-			frequencies_lang_get = self.frequencies[lang].get
+			log_frequencies_lang_get = self.log_frequencies[lang].get
 			estimates[lang] = (
-				sum(log1p(alpha + frequencies_lang_get(ngram, 0.0)) for ngram in ngrams)
+				sum(log_frequencies_lang_get(ngram, log1p_alpha) for ngram in ngrams)
 				- log(beta + self.frequency_totals[lang]) * length
 			)
 		return estimates
+	
+
+	def cache_log_frequency(self):
+		alpha = self.smoothing_coefficient * self.prior
+		self.log_frequencies = {}
+		for lang in self.frequencies:
+			frequencies_lang = self.frequencies[lang]
+			self.log_frequencies[lang] = dict(
+				(ngram, log1p(alpha + frequencies_lang[ngram])) for ngram in frequencies_lang
+			)
