@@ -25,6 +25,7 @@ class TestScript(unittest.TestCase):
 			(u'ค','Thai'),
 			(u'氣','CJK Unified Ideographs'),
 			(u'気','CJK Unified Ideographs'),
+			(u'ａ','Halfwidth and Fullwidth Forms'),
 			(u'の','Hiragana'),
 			(u'ト','Katakana'),
 			(u'ಠ','Kannada'),
@@ -80,6 +81,20 @@ class TestScript(unittest.TestCase):
 		testcases2 = u'ー'
 		for c in testcases1+testcases2:
 			self.assertEqual(script(c, avoid_common=True), 'Katakana')
+	
+	def test_katakana_halfwidth(self):
+		"""Test script: Katakana halfwidth"""
+		testcases = u'ｶﾀｶﾅ'
+		for c in testcases:
+			self.assertEqual(script(c, avoid_common=False), 'Katakana')
+			self.assertEqual(script(c, avoid_common=True), 'Katakana')
+	
+	def test_latin_fullwidth(self):
+		"""Test script: Latin fullwidth"""
+		testcases = u'ａＡ'
+		for c in testcases:
+			self.assertEqual(script(c, avoid_common=False), 'Latin')
+			self.assertEqual(script(c, avoid_common=True), 'Latin')
 
 
 def suite():
