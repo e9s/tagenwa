@@ -27,6 +27,7 @@ def split(iterable, separator, include_separator=False):
 	:type length: function
 	:param include_separator: True if the separator should also be returned (default is False)
 	:type include_separator: bool
+	:rtype: iterator
 	"""
 	buffer = []
 	for i in iterable:
@@ -60,7 +61,7 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 	:param filltail: True if partial tuples should be returned at the end (default is True)
 	:type filltail: bool
 	:return: iterable of tuples
-	:rtype: generator
+	:rtype: iterator
 	"""
 	
 	# fill lead if needed
