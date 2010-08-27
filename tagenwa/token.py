@@ -25,22 +25,44 @@ class Token(object):
 # Constructors
 ###########################################################
 	
-	def __init__(self, text):
-		"""Create a new Token."""
+	def __init__(self, text, properties=None):
+		"""Create a new Token.
+		
+		The `text` parameter must be a unicode string or a Token instance.
+		If a Token instance is given, the text and the properties of the given token
+		is copied when creating the new token.
+		
+		The optional `properties` parameter can be a `dict` or an iterable of key-value pairs and
+		is used to update the properties of the new token.
+		
+		:param text: text of the new Token or a Token to copy from
+		:type text: unicode or Token
+		:param properties: properties to add to the new Token
+		"""
 		if isinstance(text, unicode):
 			self._text = text
 			self._text_properties_cache = {}
 			self.properties = {u'original':text}
+			if properties is not None:
+				self.properties.update(properties)
 		elif isinstance(text, Token):
 			self._text = text.text
-			self._text_properties_cache = {}
+			# The _text_properties_cache is append-only so it can be shared safely
+			self._text_properties_cache = text._text_properties_cache
 			self.properties = deepcopy(text.properties)
+			if properties is not None:
+				self.properties.update(properties)
 		else:
-			raise TypeError('Only unicode and Token are supported, got %s.' % type(text).__name__)
+			raise TypeError("Parameter must be unicode or Token, got %s." % type(text).__name__)
 	
-	def copy(self, text=None):
-		"""Create a new Token by copy (optionally with a new text)."""
-		t = Token(self)
+	def copy(self, text=None, properties=None):
+		"""Create a new Token by copy.
+		
+		:param text: text of the new Token
+		:type text: unicode
+		:param properties: properties to add to the new Token
+		"""
+		t = Token(self, properties)
 		if text is not None:
 			t.set_text(text)
 		return t
@@ -50,14 +72,27 @@ class Token(object):
 ###########################################################
 	
 	def get_text(self):
-		"""Return the token's text."""
+		"""Return the token's text.
+		
+		:return: text of the token
+		:rtype: unicode
+		"""
 		return self._text
 
 	def set_text(self, text):
-		"""Set the token's text."""
+		"""Set the token's text.
+		
+		:param text: text of the token
+		:type text: unicode
+		:return: self
+		:rtype: Token
+		"""
+		if not isinstance(text, unicode):
+			raise TypeError("Text must be unicode, got %s." % type(text).__name__)
 		self._text = text
 		# Invalidate the cache
 		self._text_properties_cache = {}
+		return self
 	
 	text = property(get_text, set_text)
 	
@@ -76,22 +111,60 @@ class Token(object):
 ###########################################################
 
 	def set(self, key, value):
-		"""Set the property to the given value and return the token."""
+		"""Set the property to the given value and return the token.
+		
+		The `set` method returns the token itself to allows to chain several `set` method calls together.
+		
+		>>> Token(u'snake').set(u'lang', u'en').set(u'part-of-speech', u'noun')
+		Token(u'snake', {u'lang': u'en', u'part-of-speech': u'noun', u'original': u'snake'})
+		
+		:param key: property key
+		:param value: property value
+		:return: self
+		:rtype: Token
+		"""
 		self.properties[key] = value
+		return self
+
+	def update(self, properties):
+		"""Update the properties of the token and return it.
+		
+		:param properties: properties to add
+		:type properties: dict
+		:return: self
+		:rtype: Token
+		"""
+		self.properties.update(properties)
 		return self
 	
 	def delete(self, key):
-		"""Delete the property if it is defined and return the token."""
+		"""Delete the property if it is defined and return the token.
+		
+		:param key: property key
+		:return: self
+		:rtype: Token
+		"""
 		if key in self.properties:
 			del self.properties[key]
 		return self
 	
 	def has(self, key):
-		"""Check if the property is defined."""
+		"""Check if the property is defined.
+		
+		:param key: property key
+		:return: True if the property is defined, False otherwise
+		:rtype: bool
+		"""
 		return key in self.properties
 	
 	def get(self, key, default=None):
-		"""Return the property value if the property is defined, else 'default'.  If 'default' is not given, it defaults to 'None'."""
+		"""Return the property value if the property is defined, else 'default'.
+		If 'default' is not given, it defaults to 'None'.
+		
+		:param key: property key
+		:param default: default value
+		:return: property value
+		"""
 		return self.properties.get(key,default)
 	
 	
@@ -160,80 +233,151 @@ class Token(object):
 ###########################################################
 
 	def __contains__(self, string):
+		"""Return true if the token contains the specified string, false otherwise.
+		
+		:rtype: bool
+		"""
 		return string in self._text
 	
 	def __len__(self):
+		"""Return the length of the token.
+		
+		:rtype: int
+		"""
 		return len(self._text)
 	
 	def endswith(self, string):
+		"""Return true if the token ends with the specified string, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.endswith(string)
 	
 	def isalnum(self):
-		"""Return true if all characters in the token are alphanumeric and there is at least one character, false otherwise."""
+		"""Return true if all characters in the token are alphanumeric
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.isalnum()
 	
 	def isalpha(self):
-		"""Return true if all characters in the token are alphabetic and there is at least one character, false otherwise."""
+		"""Return true if all characters in the token are alphabetic
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.isalpha()
 	
 	def isdecimal(self):
 		"""Return true if all characters in the token are decimal characters, false otherwise.
 		
-		Decimal characters include digit characters, and all characters that that can be used to form decimal-radix numbers, e.g. U+0660, ARABIC-INDIC DIGIT ZERO."""
+		Decimal characters include digit characters,
+		and all characters that that can be used to form decimal-radix numbers,
+		e.g. U+0660, ARABIC-INDIC DIGIT ZERO.
+		
+		:rtype: bool
+		"""
 		return self._text.isdecimal()
 	
 	def isdigit(self):
-		"""Return true if all characters in the token are digits and there is at least one character, false otherwise."""
+		"""Return true if all characters in the token are digits
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.isdigit()
 	
 	def islower(self):
-		"""Return true if all cased characters in the string are lowercase and there is at least one cased character, false otherwise."""
+		"""Return true if all cased characters in the string are lowercase
+		and there is at least one cased character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.islower()
 	
 	def isnumeric(self):
 		"""Return true if all characters in the token are numeric characters, false otherwise.
 		
-		Numeric characters include digit characters, and all characters that have the Unicode numeric value property, e.g. U+2155, VULGAR FRACTION ONE FIFTH."""
+		Numeric characters include digit characters,
+		and all characters that have the Unicode numeric value property,
+		e.g. U+2155, VULGAR FRACTION ONE FIFTH.
+		
+		:rtype: bool
+		"""
 		return self._text.isnumeric()
 	
 	def isspace(self):
-		"""Return true if all characters in the token are whitespace and there is at least one character, false otherwise."""
+		"""Return true if all characters in the token are whitespace
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.isspace()
 	
 	def istitle(self):
+		"""
+		
+		:rtype: bool
+		"""
 		return self._text.istitle()
 	
 	def isupper(self):
-		"""Return true if all cased characters in the string are uppercase and there is at least one cased character, false otherwise."""
+		"""Return true if all cased characters in the string are uppercase
+		and there is at least one cased character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.isupper()
 	
 	def startswith(self, string):
+		"""Return true if the token starts with the specified string, false otherwise.
+		
+		:rtype: bool
+		"""
 		return self._text.startswith(string)
-	
 	
 	@_text_property_caching
 	def haslatin(self):
+		"""Return true if the token contains at least one latin character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return any(script(c, avoid_common=True) == 'Latin' for c in self._text)
 	
 	@_text_property_caching
 	def iseol(self):
-		"""Return true if all characters in the token are end-of-line characters and there is at least one character, false otherwise."""
+		"""Return true if all characters in the token are end-of-line characters
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return all(c in u'\n\r' for c in self._text)
 	
 	@_text_property_caching
 	def ishexadecimal(self):
-		"""Return true if the token is of the form 0x[0-9a-fA-F]+, false otherwise."""
+		"""Return true if the token is of the form 0x[0-9a-fA-F]+, false otherwise.
+		
+		:rtype: bool
+		"""
 		t = self._text
 		return len(t) > 2 and t[:2] == u'0x' and all(c in u'0123456789abcdefABCDEF' for c in t[2:])
 	
 	@_text_property_caching
 	def isterm(self):
-		"""Return true if any character in the token is a letter or a digit and there is at least one character, false otherwise."""
+		"""Return true if any character in the token is a letter or a digit
+		and there is at least one character, false otherwise.
+		
+		:rtype: bool
+		"""
 		return any(ucategory(c).startswith('L') or ucategory(c) == 'Nd' for c in self._text)
 	
 	@_text_property_caching
 	def isword(self):
-		"""Return true if the token is a word (only contains letters or dash punctuations), false otherwise."""
+		"""Return true if the token is a word (only contains letters or dash punctuations), false otherwise.
+		
+		:rtype: bool
+		"""
 		return all(
 			ucategory(c).startswith('L') or ucategory(c) == 'Pd' for c in self._text
 		) and not all(
@@ -245,10 +389,25 @@ class Token(object):
 ###########################################################
 	
 	def __unicode__(self):
+		"""Return the text of the token.
+		
+		:return: text of the token
+		:rtype: unicode
+		"""
 		return self.text
 	
 	def __repr__(self):
-		return self.text.encode('unicode_escape')+'{'+', '.join(unicode(k).encode('unicode_escape')+':'+repr(v) for k,v in self.properties.iteritems())+'}'
+		"""Return a representation of the token instance.
+		
+		:rtype: str
+		"""
+		return (
+			'Token(' +
+			repr(self.text) +
+			', {' +
+			', '.join(repr(k)+': '+repr(v) for k,v in self.properties.iteritems()) +
+			'})'
+		)
 
 
 
@@ -256,12 +415,19 @@ class Token(object):
 # Useful functions to manipulate tokens
 ###########################################################
 
-def set_property(tokens, name, value_function, *args, **kwargs):
-	"""Set the `name` property of an iterable of tokens to the returned value of the `value_function` function.
+def set_property(tokens, key, value_function, *args, **kwargs):
+	"""Set the property `key` of all tokens to the value of the `value_function` function.
 	
 	The value of the property is defined by a function call `value_function(token, *args, **kwargs)`.
+	
+	:param tokens: iterable of tokens
+	:param key: key of the property to be set
+	:param value_function: callback function
+	:type value_function: function
+	:return: iterable of tokens
+	:rtype: iterator
 	"""
-	return (token.set(name, value_function(token, *args, **kwargs)) for token in tokens)
+	return (token.set(key, value_function(token, *args, **kwargs)) for token in tokens)
 
 
 
