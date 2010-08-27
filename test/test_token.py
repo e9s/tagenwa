@@ -1,9 +1,15 @@
 # -*- coding: UTF-8 -*-
-import unittest
+import unittest, doctest
 
 from tagenwa.token import Token
 
 class TestToken(unittest.TestCase):	
+	
+	def test_util_doctest(self):
+		import tagenwa.token
+		failure_count, test_count = doctest.testmod(tagenwa.token)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.token: %i failed out of %i' % (failure_count, test_count))
+	
 	
 	def test_isalpha(self):
 		testcases = [
@@ -24,6 +30,7 @@ class TestToken(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isalpha(), repr(i))
 	
+	
 	def test_isalnum(self):
 		testcases = [
 			(u'abcde', True),
@@ -43,6 +50,7 @@ class TestToken(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isalnum(), repr(i))
 	
+	
 	def test_isnumeric(self):
 		testcases = [
 			(u'abcde', False),
@@ -57,7 +65,8 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isnumeric(), repr(i))
-
+	
+	
 	def test_isdigit(self):
 		testcases = [
 			(u'abcde', False),
@@ -72,7 +81,8 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isdigit(), repr(i))
-
+	
+	
 	def test_isdecimal(self):
 		testcases = [
 			(u'abcde', False),
@@ -87,7 +97,8 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isdecimal(), repr(i))
-
+	
+	
 	def test_ishexadecimal(self):
 		testcases = [
 			(u'abcde', False),
@@ -104,7 +115,8 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).ishexadecimal(), repr(i))
-
+	
+	
 	def test_isspace(self):
 		testcases = [
 			(u'abcde', False),
@@ -122,6 +134,7 @@ class TestToken(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isspace(), repr(i))
 	
+	
 	def test_iseol(self):
 		testcases = [
 			(u'abcde', False),
@@ -138,6 +151,7 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).iseol(), repr(i))
+	
 	
 	def test_isterm(self):
 		testcases = [
@@ -170,6 +184,7 @@ class TestToken(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isterm(), repr(i))
 	
+	
 	def test_isterm_cached(self):
 		t = Token(u'abc')
 		self.assertTrue(t.isterm())
@@ -177,6 +192,7 @@ class TestToken(unittest.TestCase):
 		t.text = u'...'
 		self.assertFalse(t.isterm())
 		self.assertFalse(t.isterm())
+	
 	
 	def test_isword(self):
 		testcases = [
@@ -208,6 +224,7 @@ class TestToken(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, Token(i).isword(), repr(i))
+	
 	
 	def test_haslatin(self):
 		testcases = [
