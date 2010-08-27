@@ -101,11 +101,15 @@ class NgramLanguageIdentifier(object):
 		"""
 		return self.ngram_generator(token)
 	
-	def train(self, lang, tokens):
+	def train(self, lang, tokens, process_training=True):
 		"""Train the language identifier on the tokens.
 		
 		This method calls `train_frequency` behind the scene.
 		
+		:param lang: the language
+		:param tokens: iterable of tokens to train on
+		:param process_training: specifies whether to build the cache at the end of the training
+		:type process_training: bool
 		:return: None
 		"""
 		# Generate the ngram frequency
@@ -114,12 +118,17 @@ class NgramLanguageIdentifier(object):
 			for ngram in self.ngram_generator(t.text):
 				frequency[ngram] += 1
 		# Train
-		return self.train_frequency(lang, frequency)
+		return self.train_frequency(lang, frequency, process_training)
 	
 	
-	def train_frequency(self, lang, frequency):
+	def train_frequency(self, lang, frequency, process_training=True):
 		"""Train the language identifier on the n-gram frequency.
 		
+		:param lang: the language
+		:param frequency: dictionary of n-gram frequencies to train on
+		:type frequency: dict
+		:param process_training: specifies whether to build the cache at the end of the training
+		:type process_training: bool
 		:return: None
 		"""
 		# Invalidate the cache
@@ -134,6 +143,9 @@ class NgramLanguageIdentifier(object):
 			frequencies_lang[ngram] = frequencies_lang.get(ngram, 0) + frequency[ngram]
 		# Update the total frequency
 		self.frequency_totals[lang] += sum(frequency.itervalues())
+		# Update the cache
+		if process_training:
+			self.process_training()
 	
 	
 	def estimate(self, token):
@@ -141,6 +153,9 @@ class NgramLanguageIdentifier(object):
 		
 		This method calls `estimate_ngrams` with the results of the `ngrams` method as parameter.
 		
+		:param token: the token to estimate
+		:type token: tagenwa.token.Token
+		:return: dictionary of the log probability for each language
 		:rtype: dict
 		"""
 		ngrams = self.ngram_generator(token)
@@ -150,13 +165,16 @@ class NgramLanguageIdentifier(object):
 	def estimate_ngrams(self, ngrams):
 		"""Estimate the log probability of each known language for the list of n-grams.
 		
+		:param ngrams: the n-grams to estimate
+		:type ngrams: list
+		:return: dictionary of log probability for each language
 		:rtype: dict
 		"""
 		if not ngrams:
 			# All languages are equally probable
 			return dict((lang, 0.0) for lang in self.frequencies)
 		
-		assert self.log_frequencies, 'Please first initialize the cache by running the cache_log_frequency() method'
+		assert self.log_frequencies, 'Please first initialize the cache by running the build_cache() method'
 		
 		# Precalculate prior
 		alpha = self.smoothing_coefficient * self.prior
@@ -174,7 +192,14 @@ class NgramLanguageIdentifier(object):
 		return estimates
 	
 
-	def cache_log_frequency(self):
+	def process_training(self):
+		"""Process the training.
+		
+		A log frequency cache is needed when running the estimate() methods and
+		needs to be built after the model has been trained.
+		
+		:return: None
+		"""
 		alpha = self.smoothing_coefficient * self.prior
 		self.log_frequencies = {}
 		for lang in self.frequencies:

@@ -57,6 +57,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		:param initarg: parameter sent to loginit for the calculation of the initial probabilities
 		:type initarg: dict
 		:return: the iterable `tokens` with an additional `lang` property to each token for which the language should be guessed
+		:rtype: iterator
 		"""
 		tokens = list(tokens)
 		
