@@ -33,6 +33,16 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		self.logprob_zero = -9999.0
 	
 	
+	def get_fixed_logemit(self, known_lang):
+		"""Return the emission log-probability of each language for a token
+		where one language is considered as known."""
+		fixed_logemit = dict(
+			(lang, self.logprob_zero) for lang in self.states
+		)
+		fixed_logemit[known_lang] = 0.0
+		return fixed_logemit
+	
+	
 	def should_guess(self, token):
 		"""Return True if the language of the token should be guessed, False otherwise.
 		
@@ -123,11 +133,7 @@ class NgramHMMLanguageIdentifier(AbstractHMM):
 		if token.has(u'lang'):
 			# If language is already known, fix it
 			known_lang = token.get(u'lang') if token.get(u'lang') in self.states else None
-			scores = dict(
-				(lang, self.logprob_zero) for lang in self.states
-			)
-			scores[known_lang] = 0.0
-			return scores
+			return self.get_fixed_logemit(known_lang)
 		
 		if not token.isword():
 			# If tokens is not a word, all languages are equally probable
