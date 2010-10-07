@@ -69,7 +69,7 @@ class Trie(object):
 				node = node[2][k]
 				path_prefix.append(k)
 				if node[1]:
-					best_prefix = [c for c in path_prefix]
+					best_prefix = list(path_prefix)
 			else:
 				break
 		return best_prefix
