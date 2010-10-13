@@ -124,9 +124,16 @@ def _get_ucd_value(o, data, default=None):
 _ucd_pattern = re.compile(r'(?P<start>[0-9A-F]+)(?:\.\.(?P<end>[0-9A-F]+))? *;(?P<value>[^#]*)(?:#|\n)')
 
 
-def _read_ucd_datafile(filename, folder='ucd510', compact=False):
+def _get_ucd_datafilepath(filename, folder=None):
+	"""Return the filepath of the file in the correct data folder"""
+	if folder is None:
+		folder = 'ucd510'
+	return joinpath(abspath(dirname(__file__)), 'ucd', folder, filename)
+
+
+def _read_ucd_datafile(filename, folder=None, compact=False):
 	"""Read UCD data file."""
-	filepath = joinpath(abspath(dirname(__file__)),folder,filename)
+	filepath = _get_ucd_datafilepath(filename, folder)
 	data = []
 	with open(filepath, 'rU', encoding='latin1') as f:
 		for line in f:
@@ -159,9 +166,9 @@ _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt', compact=True)
 
 
 
-def _get_majority_scripts(folder='ucd510'):
+def _get_majority_scripts(folder=None):
 	"""Return the majority script of each block (by calculating or unpickling it)."""
-	filepath = joinpath(abspath(dirname(__file__)),folder,'BlockScripts.cache.txt')
+	filepath = _get_ucd_datafilepath('BlockScripts.cache.txt', folder)
 	try:
 		# read majority dictionary if it exists
 		return cPickle.load(open(filepath,'rt'))
