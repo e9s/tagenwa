@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest
 
-from tagenwa.trie import Trie
+from tagenwa.util.trie import Trie
 
 class TestTrie(unittest.TestCase):	
 	
@@ -77,6 +77,37 @@ class TestTrie(unittest.TestCase):
 		self.assertEqual(trie.get('abcde'), None)
 		self.assertEqual(trie.get('abcdx'), None)
 		self.assertEqual(trie.get('abcdefg'), None)
+		
+		# test all keys
+		keys = list(trie.keys())
+		self.assertEqual(set(keys), set([tuple('ab'),tuple('abcd'),tuple('abcdef'),tuple('xyz')]))
+	
+	
+	def test_remove_leaf(self):
+		trie = self.trie
+		
+		trie.remove('abcdef')
+		
+		# test removed key
+		self.assertEqual(trie.get('abcdef'), None)
+		
+		# test existing key
+		self.assertEqual(trie.get('ab'), 2)
+		self.assertEqual(trie.get('abc'), 3)
+		self.assertEqual(trie.get('abcd'), 4)
+		self.assertEqual(trie.get('xyz'), 999)
+		
+		# test missing key
+		self.assertEqual(trie.get(''), None)
+		self.assertEqual(trie.get('a'), None)
+		self.assertEqual(trie.get('abx'), None)
+		self.assertEqual(trie.get('abcde'), None)
+		self.assertEqual(trie.get('abcdx'), None)
+		self.assertEqual(trie.get('abcdefg'), None)
+		
+		# test all keys
+		keys = list(trie.keys())
+		self.assertEqual(set(keys), set([tuple('ab'),tuple('abc'),tuple('abcd'),tuple('xyz')]))
 	
 	
 	def test_find_prefix(self):
