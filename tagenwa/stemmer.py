@@ -6,7 +6,7 @@ Stemmer (interface around PyStemmer)
 __version__ = "0.1"
 __license__ = "MIT"
 
-from util import copycase
+from tagenwa.util.tools import copycase
 
 try:
 	# Try to import PyStemmer
