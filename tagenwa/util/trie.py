@@ -16,12 +16,15 @@ class Trie(object):
 		the default value is None.
 		"""
 		self.default = default
-		# node structure is 'value', 'defined', 'children'
+		# node structure is 'value', 'defined (bool)', 'children (dict)'
 		self.root = [self.default, False, {}]
 	
 	
 	def add(self, key, value):
-		"""Add the given key-value pair to the trie."""
+		"""Add the given key-value pair to the trie.
+		
+		The key must be an iterable of hashable elements.
+		"""
 		node = self.root
 		for k in key:
 			node = node[2].setdefault(k, [self.default, False, {}])
@@ -29,17 +32,28 @@ class Trie(object):
 	
 	
 	def remove(self, key):
-		"""Remove the key from the trie."""
+		"""Remove the key from the trie.
+		
+		The key must be an iterable of hashable elements.
+		"""
 		try:
 			node = self._get_node(key)
 		except KeyError:
 			raise KeyError('Key %s not found' % repr(key))
-		# reset the node
-		node[0], node[1] = self.default, False
+		if node[2]:
+			# Perform a soft delete if there are children
+			node[0], node[1] = self.default, False
+		else:
+			# Remove the node from its parent if it has no children
+			parent_node = self._get_node(key[:-1])
+			del parent_node[2][key[-1]]
+			# TODO: Clean parents too if last children?
 	
 	
 	def __contains__(self, key):
 		"""Return True if the key is in the trie.
+		
+		The key must be an iterable of hashable elements.
 		"""
 		try:
 			value = self._get_node(key)[1]
@@ -50,6 +64,8 @@ class Trie(object):
 	
 	def get(self, key):
 		"""Return the value of the given key or the trie's default value if the key is not found.
+		
+		The key must be an iterable of hashable elements.
 		"""
 		try:
 			value = self._get_node(key)[0]
@@ -60,6 +76,8 @@ class Trie(object):
 	
 	def find_prefix(self, key):
 		"""Return the longuest prefix defined in the trie.
+		
+		The key must be an iterable of hashable elements.
 		"""
 		best_prefix = []
 		path_prefix = []
@@ -90,21 +108,25 @@ class Trie(object):
 	def keys(self, key=tuple()):
 		"""Return the list of keys as tuples.
 		
-		The prefix of the list of keys can be specified with the `key` argument.
+		The prefix of the list of keys can be specified with the `key` argument
+		which must be an iterable of hashable elements.
+		
+		The keys are returned in a breadth-first order (keys with less elements are yielded first).
+		The order within keys having the same number of elements is not defined.
 		"""
-		# get the prefix key
+		# Get the node defined by the prefix key
 		try:
 			node = self._get_node(key)
 		except:
 			return
-		# set the stack with the root note as seed
-		stack= [(tuple(key),node)]
-		# go through the stack
+		# Seed the stack with the root node
+		# The stack is a list of tuples (full_key, node)
+		stack= [(list(key),node)]
+		# Go through the stack
 		while len(stack) > 0:
-			key, node = stack.pop()
+			full_key, node = stack.pop()
 			if node[1]:
-				yield key
+				yield tuple(full_key)
 			for k in node[2]:
-				prefix = list(key)
-				stack.append((tuple(prefix+[k]),node[2][k]))
-		
+				stack.append((full_key+[k],node[2][k]))
+
