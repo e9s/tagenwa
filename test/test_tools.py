@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.util import sliding_tuples, copycase, sub
+from tagenwa.util.tools import sliding_tuples, copycase, sub
 
 
 class TestUtil(unittest.TestCase):
