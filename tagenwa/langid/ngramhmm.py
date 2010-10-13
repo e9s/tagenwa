@@ -8,7 +8,7 @@ __license__ = "MIT"
 
 from math import log, log1p
 
-from tagenwa.hmm import AbstractHMM
+from tagenwa.util.hmm import AbstractHMM
 
 
 class NgramHMMLanguageIdentifier(AbstractHMM):

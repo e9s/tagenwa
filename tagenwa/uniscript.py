@@ -6,7 +6,7 @@ Unicode script helper functions
 __version__ = "0.1"
 __license__ = "MIT"
 
-from util import memoize, group_count
+from tagenwa.util.tools import memoize, group_count
 
 from unicodedata import name
 from codecs import open

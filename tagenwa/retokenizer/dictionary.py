@@ -6,8 +6,8 @@ Dictionary-based retokenizer
 from itertools import islice
 
 from tagenwa.token import Token
-from tagenwa.trie import Trie
-from tagenwa.util import sub
+from tagenwa.util.trie import Trie
+from tagenwa.util.tools import sub
 
 
 def _default_key(tokens):

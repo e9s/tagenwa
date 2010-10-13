@@ -7,11 +7,11 @@ __version__ = "0.1"
 __license__ = "MIT"
 
 import functools
-
-from uniscript import script
-from util import copycase
 from copy import deepcopy
 from unicodedata import category as ucategory
+
+from tagenwa.uniscript import script
+from tagenwa.util.tools import copycase
 
 
 ###########################################################

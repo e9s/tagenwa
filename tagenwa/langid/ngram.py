@@ -9,7 +9,7 @@ __license__ = "MIT"
 from collections import defaultdict
 from math import log, log1p
 
-from tagenwa.util import sliding_tuples
+from tagenwa.util.tools import sliding_tuples
 
 
 def ngram_generator_factory(n):
