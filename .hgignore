@@ -8,6 +8,7 @@ doc/_build
 
 # Komodo Edit project file
 *.kpf
+*.komodoproject
 
 # Ready-made language identification training data
 tagenwa/readymade/eulangid_training
