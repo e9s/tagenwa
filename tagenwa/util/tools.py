@@ -41,7 +41,7 @@ def split(iterable, separator, include_separator=False):
 	yield buffer
 
 
-def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=True):
+def sliding_tuples(iterable, length, fill_value=None, fill_lead=True, fill_tail=True):
 	"""Generate an iterable of tuples of consecutive items from the iterable.
 	
 	Simple usage:
@@ -49,24 +49,24 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 	[(None, None, 0), (None, 0, 1), (0, 1, 2), (1, 2, 3), (2, 3, None), (3, None, None)]
 	
 	Avoiding tuples partially outside of the iterable:
-	>>> list(sliding_tuples(xrange(4), 3, filllead=False, filltail=False))
+	>>> list(sliding_tuples(xrange(4), 3, fill_lead=False, fill_tail=False))
 	[(0, 1, 2), (1, 2, 3)]
 	
 	:param iterable: an iterable
 	:param length: the length of the tuples to return
 	:type length: int
-	:param fillvalue: the value to used for filling when the tuple is partially outside of the iterable (default is None)
-	:param filllead: True if partial tuples should be returned at the beginning (default is True)
-	:type filllead: bool
-	:param filltail: True if partial tuples should be returned at the end (default is True)
-	:type filltail: bool
+	:param fill_value: the value to used for filling when the tuple is partially outside of the iterable (default is None)
+	:param fill_lead: True if partial tuples should be returned at the beginning (default is True)
+	:type fill_lead: bool
+	:param fill_tail: True if partial tuples should be returned at the end (default is True)
+	:type fill_tail: bool
 	:return: iterable of tuples
 	:rtype: iterator
 	"""
 	
 	# fill lead if needed
-	if filllead:
-		iterable = chain([fillvalue]*(length-1), iterable)
+	if fill_lead:
+		iterable = chain([fill_value]*(length-1), iterable)
 	
 	# make a list of n iterables
 	# and initialize each iterable by shifting it according to his index
@@ -81,14 +81,14 @@ def sliding_tuples(iterable, length, fillvalue=None, filllead=True, filltail=Tru
 				pass
 	
 	# fill tail if needed
-	if filltail:
-		zipped = izip_longest(*iterables, fillvalue=fillvalue)
+	if fill_tail:
+		zipped = izip_longest(*iterables, fillvalue=fill_value)
 	else:
 		zipped = izip(*iterables)
 	
 	# yield the tuples
 	for tu in zipped:
-			yield tu
+		yield tu
 
 
 def group_count(iterable):
@@ -183,7 +183,7 @@ def sub(iterable, match, replace, maxlength):
 	:return: iterable of elements
 	:rtype: iterable
 	"""
-	tuples = sliding_tuples(iterable, maxlength, filllead=False, filltail=True)
+	tuples = sliding_tuples(iterable, maxlength, fill_lead=False, fill_tail=True)
 	for tu0 in tuples:
 		replacing = False
 		# check each sub-tuple
