@@ -119,6 +119,7 @@ class Token(object):
 		Token(u'snake', {u'lang': u'en', u'part-of-speech': u'noun', u'original': u'snake'})
 		
 		:param key: property key
+		:type key: hashable
 		:param value: property value
 		:return: self
 		:rtype: Token
@@ -141,6 +142,7 @@ class Token(object):
 		"""Delete the property if it is defined and return the token.
 		
 		:param key: property key
+		:type key: hashable
 		:return: self
 		:rtype: Token
 		"""
@@ -152,6 +154,7 @@ class Token(object):
 		"""Check if the property is defined.
 		
 		:param key: property key
+		:type key: hashable
 		:return: True if the property is defined, False otherwise
 		:rtype: bool
 		"""
@@ -162,6 +165,7 @@ class Token(object):
 		If 'default' is not given, it defaults to 'None'.
 		
 		:param key: property key
+		:type key: hashable
 		:param default: default value
 		:return: property value
 		"""
@@ -276,13 +280,27 @@ class Token(object):
 		and all characters that that can be used to form decimal-radix numbers,
 		e.g. U+0660, ARABIC-INDIC DIGIT ZERO.
 		
+		>>> Token(u'123').isdecimal()
+		True
+		>>> Token(u'①').isdecimal()
+		False
+		>>> Token(u'ⅱ').isdecimal()
+		False
+		
 		:rtype: bool
 		"""
 		return self._text.isdecimal()
 	
 	def isdigit(self):
-		"""Return true if all characters in the token are digits
+		u"""Return true if all characters in the token are digits
 		and there is at least one character, false otherwise.
+		
+		>>> Token(u'123').isdigit()
+		True
+		>>> Token(u'①').isdigit()
+		True
+		>>> Token(u'ⅱ').isdigit()
+		False
 		
 		:rtype: bool
 		"""
@@ -297,11 +315,18 @@ class Token(object):
 		return self._text.islower()
 	
 	def isnumeric(self):
-		"""Return true if all characters in the token are numeric characters, false otherwise.
+		u"""Return true if all characters in the token are numeric characters, false otherwise.
 		
 		Numeric characters include digit characters,
 		and all characters that have the Unicode numeric value property,
 		e.g. U+2155, VULGAR FRACTION ONE FIFTH.
+		
+		>>> Token(u'123').isnumeric()
+		True
+		>>> Token(u'①').isnumeric()
+		True
+		>>> Token(u'ⅱ').isnumeric()
+		True
 		
 		:rtype: bool
 		"""
