@@ -21,7 +21,7 @@ Tagenwa is a multilingual natural language tokenizer library in python
 aimed to be used as part of a
 `cross-language information retrieval (CLIR) <http://en.wikipedia.org/wiki/Cross-language_information_retrieval>`_ system.
 
-Contents:
+Table of contents:
 
 .. toctree::
 	:maxdepth: 2
