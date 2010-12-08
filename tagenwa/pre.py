@@ -12,32 +12,41 @@ __license__ = "MIT"
 
 from uniscript import script
 from token import Token
-import re, unicodedata
+from unicodedata import normalize as unicodedata_normalize, category as unicodedata_category
+import re
 
 # space and end-of-line regular expression patterns
-_SPACE_PATTERN = re.compile(ur'(\s+)', re.U)
 _EOL_PATTERN = re.compile(ur'([\n\r]+)', re.U)
-_COLLAPSE_SPACE_PATTERN = re.compile(ur'^\s*$')
+_SPACE_PATTERN = re.compile(ur'(\s+)', re.U)
+_COLLAPSE_SPACE_PATTERN = re.compile(ur'^\s*$', re.U)
 
+_WORD_BOUNDARY_PATTERN = re.compile(ur'(\s+|\W)', re.U)
 
-def tokenize(text):
+# TODO: http://www.unicode.org/reports/tr29/#Word_Boundaries
+
+def tokenize(text, normalization_form='NFC'):
 	"""Tokenize a Unicode string into an iterable of tokens.
 	
-	Text is normalized into the normal form KC (form 'NFKC' in unicodedata.normalize)
-	which applies the compatibility decomposition followed by the canonical composition.
+	By default, the text is normalized into the normal form C (also known as the "NFC" normalization form)
+	which applies the canonical decomposition followed by the canonical composition.
+	This follows the `W3C recommendation <http://www.w3.org/TR/charmod-norm/#sec-ChoiceNFC>`_
+	in the document `Character Model for the World Wide Web 1.0: Normalization <http://www.w3.org/TR/charmod-norm/>`_.
+	The normalization form "NFKC" can be applied instead using the parameter `normalization_form`
+	(see `unicodedata.normalize <http://docs.python.org/library/unicodedata.html#unicodedata.normalize>`_ for details).
+	Normalization forms "NFD" and NFKD" are not allowed
+	as the `re` module does not support them.
 	
-	Text is stripped from leading and trailing white spaces.
-	Consecutive space characters are converted into one ascii space (like in html) but
-	end of lines are kept as in the original text.
+	Consecutive whitespace characters are converted into one ascii space (like in html).
+	Consecutive end of line characters are kept but are combined as one token.
 	
-	Writing scripts (e.g.: latin, cyrillic,...) are separated.
+	Character from different writing scripts (e.g.: latin, cyrillic,...) are splitted
+	into different tokens.  If a character is common to several script,
+	it is considered to be belonging to the same script as the previous character.
 	
 	Non-connecting punctuations and symbols are separated from alphanumeric characters.
 	
-	TODO: add doctest examples.
-	
 	>>> list(t.text for t in tokenize(u'Hello world!!'))
-	[u'Hello', u' ', u'world', u'!!']
+	[u'Hello', u' ', u'world', u'!', u'!']
 	
 	:param text: text to be tokenized
 	:type text: unicode
@@ -45,22 +54,23 @@ def tokenize(text):
 	:rtype: generator
 	"""
 	
-	# strip the text and normalize the unicode characters
-	text = u''.join(unicodedata.normalize('NFKC', c) for c in text.strip())
+	# assert the normalization form is either NFC or NFKC
+	assert normalization_form in ('NFC', 'NFKC'), 'Parameter normalization_form must be "NFC" or "NFKC"'
 	
-	# start tokenizing
-	tokens = [text]
+	# normalize the unicode characters and start tokenizing
+	tokens = [unicodedata_normalize(normalization_form, text)]
 	# split by end-of-lines and spaces
 	tokens = _resplit_by_pattern(tokens, _EOL_PATTERN)
 	tokens = _resplit_by_pattern(tokens, _SPACE_PATTERN)
 	# collapse spaces (but not end-of-lines) into a single ascii whitespace
-	tokens = (t if '\n' in t or not _COLLAPSE_SPACE_PATTERN.match(t) else u' ' for t in tokens)
+	tokens = (t if u'\n' in t or not _COLLAPSE_SPACE_PATTERN.match(t) else u' ' for t in tokens)
+	
+	# split by character scripts (TODO: this split on hyphen)
+	tokens = _resplit_by_pattern(tokens, _WORD_BOUNDARY_PATTERN)
 	
 	# split by character scripts
-	tokens = _resplit_by_class(tokens, _character_class)
-	
-	# split leading and trailing dashes
-	tokens = _resplit_strip_dash(tokens)
+	#tokens = _resplit_by_class(tokens, _character_class)
+	tokens = _resplit_tokens(tokens, _split_script)
 	
 	# return a generator of tokens
 	return (Token(t) for t in tokens if t)
@@ -75,33 +85,28 @@ def _resplit_by_pattern(tokens, pattern):
 	return (s for t in tokens for s in pattern.split(t) if s)
 
 
-def _resplit_strip_dash(tokens):
-	"""Resplit an iterable of tokens by splitting the leading and trailing dashes."""
-	return (s for t in tokens for s in _split_strip_dash(t) if s)
+def _resplit_tokens(tokens, split_function):
+	"""Resplit an iterable of tokens using a token splitting function."""
+	return (s for t in tokens for s in split_function(t) if s)
 
 
-def _split_strip_dash(text):
-	"""Split leading and trailing dashes."""
-	# shortcut when no split to do
-	length = len(text)
-	if length <= 1 or (text[0] != u'-' and text[-1] != u'-'):
-		return (text,)
+SAME_PREVIOUS_SCRIPTS = [u'Common', u'Inherited']
+def _split_script(text):
+	"""Split if the scripts of two consecutive characters are different.
 	
-	# find leading dashes
+	Common characters to several scripts and inherited characters
+	are considered to be written in the same script as the previous character.
+	"""
+	current_script = None
 	i = 0
-	while i < length:
-		if text[i] == u'-':
-			i += 1
-		else:
-			break
-	# find trailing dashes
-	j = length - 1
-	while j >= i:
-		if text[j] == u'-':
-			j -= 1
-		else:
-			break
-	return (text[0:i], text[i:j+1], text[j+1:length])
+	for j in xrange(len(text)):
+		s = script(text[j])
+		if s != current_script and s not in SAME_PREVIOUS_SCRIPTS and current_script is not None:
+			yield text[i:j]
+			i = j
+		if s not in SAME_PREVIOUS_SCRIPTS:
+			current_script = s
+	yield text[i:]
 
 
 def _resplit_by_class(tokens, get_class):
@@ -129,14 +134,11 @@ def _resplit_by_class(tokens, get_class):
 				buffer = [c]
 			previous_class = current_class
 		# end of the token
-		if buffer:
-			# if not empty, yield the buffer then empty it
-			yield u''.join(buffer)
-			buffer = []
+		yield u''.join(buffer)
+		buffer = []
 	return
 
 
-	
 # documentation about Unicode category:
 # http://www.fileformat.info/info/unicode/category/index.htm
 _UNICODE_CAT_MAPPING = {
@@ -162,7 +164,7 @@ def _character_class(c):
 	"""
 	
 	# splitting by unicode category (punctuation and symbols)
-	cat = unicodedata.category(c)
+	cat = unicodedata_category(c)
 	if cat in _UNICODE_CAT_MAPPING:
 		return c
 	# splitting by script families
