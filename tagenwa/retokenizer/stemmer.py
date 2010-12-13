@@ -8,6 +8,8 @@ __license__ = "MIT"
 
 from tagenwa.util.tools import copycase
 
+STEMMER_IS_IMPORTED = False
+STEMMERS = {}
 try:
 	# Try to import PyStemmer
 	import Stemmer
@@ -16,7 +18,7 @@ try:
 	STEMMER_LANGUAGES = ['da','de','en','es','fi','fr','hu','it','no','nl','pt','tr','sv']
 	STEMMERS = dict((lang,Stemmer.Stemmer(lang)) for lang in STEMMER_LANGUAGES)
 except ImportError:
-	STEMMER_IS_IMPORTED = False
+	raise ImportError('The PyStemmer module could not be imported.')
 
 
 class StemmerRetokenizer(object):
@@ -41,7 +43,7 @@ class StemmerRetokenizer(object):
 	
 	def _stem_token(self, token):
 		lang = token.get(self.lang_key, None) if self.lang is None else self.lang
-		if lang is None or lang not in STEMMER_LANGUAGES or not token.isword():
+		if lang is None or lang not in STEMMERS or not token.isword():
 			return token
 		word_lower = token.text.lower()
 		return token.set(self.stem_key, STEMMERS[lang].stemWord(word_lower))
@@ -56,11 +58,8 @@ def stem(word, lang):
 	:param lang: unicode
 	:rtype unicode
 	"""
-	# Assert that PyStemmer is imported
-	if not STEMMER_IS_IMPORTED:
-		raise ImportError('Function stem(token) needs the PyStemmer module but this module could not be imported.')
 	# Check if a language is defined and supported
-	if lang not in STEMMER_LANGUAGES:
+	if lang not in STEMMERS:
 		raise KeyError('No stemmer exists for this language.')
 	return STEMMERS[lang].stemWord(word)
 
