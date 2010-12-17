@@ -21,6 +21,9 @@ from tagenwa.util.tools import copycase
 class Token(object):
 	"""Token combining a unicode text and a properties dictionary."""
 	
+	# Define slots for improved performances
+	__slots__ = ['_text', 'properties', '_text_properties_cache', '__weakref__']
+	
 ###########################################################
 # Constructors
 ###########################################################
@@ -34,6 +37,10 @@ class Token(object):
 		
 		The optional `properties` parameter can be a `dict` or an iterable of key-value pairs and
 		is used to update the properties of the new token.
+		
+		Note that the Token class defines slots for improved performances.
+		See `http://docs.python.org/reference/datamodel.html#slots`
+		for more details on the implications.
 		
 		:param text: text of the new Token or a Token to copy from
 		:type text: unicode or Token
