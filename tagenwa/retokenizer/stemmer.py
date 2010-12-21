@@ -15,7 +15,7 @@ try:
 	import Stemmer
 	STEMMER_IS_IMPORTED = True
 	# supported languages by PyStemmer
-	STEMMER_LANGUAGES = ['da','de','en','es','fi','fr','hu','it','no','nl','pt','tr','sv']
+	STEMMER_LANGUAGES = ['da','de','en','es','fi','fr','hu','it','no','nl','pt','ro','ru','sv','tr']
 	STEMMERS = dict((lang,Stemmer.Stemmer(lang)) for lang in STEMMER_LANGUAGES)
 except ImportError:
 	raise ImportError('The PyStemmer module could not be imported.')
@@ -42,8 +42,11 @@ class StemmerRetokenizer(object):
 		return (self._stem_token(t) for t in tokens)
 	
 	def _stem_token(self, token):
-		lang = token.get(self.lang_key, None) if self.lang is None else self.lang
-		if lang is None or lang not in STEMMERS or not token.isword():
+		"""Add the stem as a property of the token."""
+		# Select the stemming language
+		lang = self.lang if self.lang is not None else token.get(self.lang_key, None)
+		# Do not stem if the language is not supported or if the token is not a word
+		if lang not in STEMMERS or not token.isword():
 			return token
 		word_lower = token.text.lower()
 		return token.set(self.stem_key, STEMMERS[lang].stemWord(word_lower))
@@ -61,5 +64,6 @@ def stem(word, lang):
 	# Check if a language is defined and supported
 	if lang not in STEMMERS:
 		raise KeyError('No stemmer exists for this language.')
+	# Stem the language with PyStemmer
 	return STEMMERS[lang].stemWord(word)
 
