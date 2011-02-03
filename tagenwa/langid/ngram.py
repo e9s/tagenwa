@@ -60,12 +60,18 @@ class NgramLanguageIdentifier(object):
 		`beta-distributed <http://en.wikipedia.org/wiki/Beta_distribution>`_
 		`conjugate prior <http://en.wikipedia.org/wiki/Conjugate_prior>`_
 		used in the estimation of the language probabilities.
-		They are linked to the parameters alpha and beta of the prior's beta distribution with the following relations:
+		They are linked to the parameters alpha and beta of the prior's beta distribution
+		as follows:
 		
 		* alpha = `prior` * `smoothing_coefficient`
 		* beta = (1 - `prior`) * `smoothing_coefficient`
 		
 		with 0 <= `prior` <= 1 and 0 <= `smoothing_coefficient`.
+		The mean of this beta distribution is equal to `prior`.
+		The `smoothing_coefficient` corresponds to the number of observations
+		that would be needed to get a posterior beta distribution
+		with the same parameters alpha and beta
+		starting from a uniform distributed prior.
 		
 		:param n: the size of the n-grams
 		:type n: int
