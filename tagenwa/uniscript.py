@@ -128,7 +128,7 @@ def _get_ucd_datafilepath(filename, folder=None):
 	"""Return the filepath of the file in the correct data folder"""
 	if folder is None:
 		folder = 'ucd510'
-	return joinpath(abspath(dirname(__file__)), 'ucd', folder, filename)
+	return joinpath(abspath(dirname(__file__)), 'data', folder, filename)
 
 
 def _read_ucd_datafile(filename, folder=None, compact=False):
@@ -168,7 +168,7 @@ _UCD_SCRIPTS = _read_ucd_datafile('Scripts.txt', compact=True)
 
 def _get_majority_scripts(folder=None):
 	"""Return the majority script of each block (by calculating or unpickling it)."""
-	filepath = _get_ucd_datafilepath('BlockScripts.cache.txt', folder)
+	filepath = _get_ucd_datafilepath('BlockScripts.cache', folder)
 	try:
 		# read majority dictionary if it exists
 		return cPickle.load(open(filepath,'rt'))

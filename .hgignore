@@ -12,3 +12,6 @@ doc/_build
 
 # Ready-made language identification training data
 tagenwa/readymade/eulangid_training
+
+# Data cache
+tagenwa/data/*/*.cache
