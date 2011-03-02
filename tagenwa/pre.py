@@ -90,8 +90,7 @@ def _resplit_tokens(tokens, split_function):
 	return (s for t in tokens for s in split_function(t) if s)
 
 
-SAME_PREVIOUS_SCRIPTS = [u'Common', u'Inherited']
-def _split_script(text):
+def _split_script(text, avoid_common=True):
 	"""Split if the scripts of two consecutive characters are different.
 	
 	Common characters to several scripts and inherited characters
@@ -99,14 +98,36 @@ def _split_script(text):
 	"""
 	current_script = None
 	i = 0
+	common_i = None
 	for j in xrange(len(text)):
 		s = script(text[j])
-		if s != current_script and s not in SAME_PREVIOUS_SCRIPTS and current_script is not None:
-			yield text[i:j]
+		if s == current_script:
+			# Character with the same (defined) script, close the common span
+			if common_i is not None:
+				common_i = None
+			continue
+		elif s == u'Inherited':
+			# The script is inherited from the previous character
+			# This is never split
+			continue
+		elif s == u'Common' and avoid_common:
+			# Update the index of the first common character if needed
+			if common_i is None:
+				s2 = script(text[j], avoid_common=True)
+				if s2 != current_script:
+					common_i = j
+			continue
+		elif s != current_script and current_script is not None:
+			# The script is different: split and update the script
+			if common_i is not None:
+				yield text[i:common_i]
+				yield text[common_i:j]
+			else:
+				yield text[i:j]
 			i = j
-		if s not in SAME_PREVIOUS_SCRIPTS:
-			current_script = s
-	yield text[i:]
+			common_i = None
+		current_script = s	
+	yield text[i:len(text)]
 
 
 def _resplit_by_class(tokens, get_class):
