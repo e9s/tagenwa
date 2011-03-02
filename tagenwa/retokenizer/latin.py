@@ -21,6 +21,7 @@ _NORMALIZING_TRANSLATIONS = {
 	ord(u'æ'): u'ae',
 	ord(u'œ'): u'oe',
 	ord(u'ĳ'): u'ij',
+	ord(u'ł'): u'l',
 }
 
 def normalize_latin(text):
