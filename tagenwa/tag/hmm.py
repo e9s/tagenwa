@@ -11,6 +11,7 @@ from nltk.tag.api import TaggerI, FeaturesetTaggerI
 class AbstractHMMTaggerI(TaggerI):
 	
 	def tag(self, unlabeled_sequence):
+		"""Tag the given sequence with the highest probable state sequence."""
 		labels = self.viterbi(unlabeled_sequence)
 		return zip(unlabeled_sequence, labels)
 	
@@ -40,6 +41,7 @@ class AbstractHMMTaggerI(TaggerI):
 		"""
 		raise NotImplementedError()
 	
+	
 	def viterbi(self, iterable):
 		"""Return the most probable sequence of hidden states.
 		
@@ -60,14 +62,15 @@ class AbstractHMMTaggerI(TaggerI):
 		# initialize the matrix of best previous elements
 		V = []
 		# set the previous observable element to the first element
+		iterator = iter(iterable)
 		try:
-			ti = iterable.next()
+			ti = iterator.next()
 		except StopIteration:
-			# empty iterable
+			# empty iterator
 			return []
 		
 		# search for the best path and the log-probability of the states sequence
-		for tj in iterable:
+		for tj in iterator:
 			Q = {}
 			W = {}
 			pe = logemit(tj)
@@ -98,24 +101,42 @@ class AbstractHMMTaggerI(TaggerI):
 
 class ClassifierBasedHMMTagger(AbstractHMMTaggerI, FeaturesetTaggerI):
 	
-	def __init__(self, classifer, loginit=None, logtrans=None, *args, **kwargs):
-		self._classifer = classifier
-		self.states = self._classifer.labels()
+	def __init__(self, classifier, loginit=None, logtrans=None, *args, **kwargs):
+		"""Create a hidden Markov model tagger where the emission probability
+		is calculated by a classifier.
+		
+		"""
+		# Get the classifier and the list of possible states
+		self._classifier = classifier
+		self.states = self._classifier.labels()
+		
+		# Overload the initial and transition log-probability functions if given
 		if loginit is not None:
 			self.loginit = loginit	
 		if logtrans is not None:
 			self.logtrans = logtrans
+		
+		# Calculate the log value of the uniform probability over all the states
+		self._uniform_logprob = log(1.0 / len(self.states))
+	
 	
 	def classifier(self):
+		"""Return the classifier."""
 		return self._classifier
 	
+	
 	def loginit(self):
-		return dict((s, 0.0) for s in self.states)
+		"""Return a default uniform initial probability."""
+		return dict((s, self._uniform_logprob) for s in self.states)
+	
 	
 	def logemit(self, featureset):
-		emit = self._classifer.prob_classify(featureset)
-		return dict((s, log(emit[s])) for s in emit)
+		"""Return the emission probability from the classifier."""
+		emit = self._classifier.prob_classify(featureset)
+		return dict((s, emit.logprob(s)) for s in emit.samples())
+	
 	
 	def logtrans(self, featureset1, featureset2):
-		return dict(((s1, s2), 0.0) for s1 in self.states for s2 in self.states)
+		"""Return a default uniform transition probability."""
+		return dict(((s1, s2), self._uniform_logprob) for s1 in self.states for s2 in self.states)
 

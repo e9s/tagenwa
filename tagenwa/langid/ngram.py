@@ -6,7 +6,7 @@ Character n-gram language classifier
 __license__ = "MIT"
 
 from collections import defaultdict
-from math import log, exp
+from math import log, log1p, exp
 import unicodedata
 import itertools
 import re
@@ -14,7 +14,7 @@ import re
 from nltk.classify.api import ClassifierI
 from nltk.probability import FreqDist, ELEProbDist, DictionaryProbDist
 
-from tagenwa.utils import sliding_tuples
+from tagenwa.utils import sliding_tuples, merge_tagged
 from tagenwa.tag.hmm import ClassifierBasedHMMTagger
 
 
@@ -200,7 +200,7 @@ class NgramLanguageClassifier(ClassifierI):
 	
 	def classify_text(self, text):
 		"""Return the most appropriate label for the given text."""
-		return self.prob_classify_text(featureset).max()
+		return self.prob_classify_text(text).max()
 
 
 
@@ -210,18 +210,37 @@ class NgramLanguageClassifier(ClassifierI):
 
 class NgramHMMLanguageTagger(ClassifierBasedHMMTagger):
 	
-	def __init__(self, classifer, loginit=None, logtrans=None, *args, **kwargs):
-		self._classifer = classifier
-		self.states = self._classifer.labels()
-		if loginit is not None:
-			self.loginit = loginit	
-		if logtrans is not None:
-			self.logtrans = logtrans
+	def __init__(self, classifier, loginit=None, logtrans=None, *args, **kwargs):
+		super(NgramHMMLanguageTagger, self).__init__(classifier, loginit=loginit, logtrans=logtrans, *args, **kwargs)
+		
 	
 	def logtrans(self, featureset1, featureset2):
 		if not featureset2[u'ngrams']:
-			return dict(((s1, s2), 0.0 if s1==s2 else -15.0) for s1 in self.states for s2 in self.states)
+			pdiff = 1E-15
+			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
+			log_pdiff = log(pdiff)
+			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
 		elif not featureset1[u'ngrams']:
-			return dict(((s1, s2), 0.0 if s1==s2 else -20.0) for s1 in self.states for s2 in self.states)
+			pdiff = 1E-20
+			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
+			log_pdiff = log(pdiff)
+			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
 		else:
-			return dict(((s1, s2), 0.0 if s1==s2 else -10.0) for s1 in self.states for s2 in self.states)
+			pdiff = 1E-10
+			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
+			log_pdiff = log(pdiff)
+			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
+	
+	
+	def tag_text(self, text):
+		"""Return a list of tagged tokens from the given text."""
+		tokens = self._classifier._training._tokenize(text)
+		get_featureset = self._classifier.get_token_featureset
+		labeled_sequence = self.tag([get_featureset(token) for token in tokens])
+		return [(token[u'text'], tag) for token, tag in labeled_sequence]
+	
+	
+	def split_text(self, text):
+		"""Split the given text into a list of tuples (text part, language)."""
+		return list(merge_tagged(self.tag_text(text), lambda x:u''.join(x)))
+
