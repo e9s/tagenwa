@@ -1,10 +1,11 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.unicodescript import script, block
+from tagenwa.text.script import script, block
 
 
 class TestScript(unittest.TestCase):
+	
 	
 	def test_unicodescript_doctest(self):
 		"""Test uniscript doctests"""
@@ -35,11 +36,13 @@ class TestScript(unittest.TestCase):
 		for i,e in testcases:
 			self.assertEqual(block(i),e)
 	
+	
 	def test_block_error(self):
 		"""Test unicodescript.block() with invalid argument"""
 		self.assertRaises(TypeError, block, (5,))
 		self.assertRaises(TypeError, block, ('a',))
 		self.assertRaises(TypeError, block, (u'abc',))
+	
 	
 	def test_script_error(self):
 		"""Test unicodescript.script() with invalid argument"""
@@ -47,49 +50,50 @@ class TestScript(unittest.TestCase):
 		self.assertRaises(TypeError, script, ('a',))
 		self.assertRaises(TypeError, script, (u'abc',))
 	
+	
 	def test_latin_letters(self):
 		"""Test unicodescript.script() with Latin"""
 		testcases = u'aAåÅăĂąĄẬậɑⱭɐⱯæÆéÉèÈȄȅḿḾøØœŒÿŸ'
 		for c in testcases:
-			self.assertEqual(script(c, avoid_common=True), 'Latin')
-			self.assertEqual(script(c, avoid_common=False), 'Latin')
+			self.assertEqual(script(c), 'Latin')
+	
 	
 	def test_cjk(self):
 		"""Test unicodescript.script() with Han"""
 		testcases = u'気氣'
 		for c in testcases:
-			self.assertEqual(script(c, avoid_common=True), 'Han')
-			self.assertEqual(script(c, avoid_common=False), 'Han')
+			self.assertEqual(script(c), 'Han')
+	
 	
 	def test_hiragana(self):
 		"""Test unicodescript.script() with Hiragana"""
 		testcases = u'あいうえおはばぱをん'
 		for c in testcases:
-			self.assertEqual(script(c, avoid_common=True), 'Hiragana')
-			self.assertEqual(script(c, avoid_common=False), 'Hiragana')
+			self.assertEqual(script(c), 'Hiragana')
+	
 	
 	def test_katakana(self):
 		"""Test unicodescript.script() with Katakana"""
 		testcases1 = u'アイウエオハパバヲン'
 		for c in testcases1:
-			self.assertEqual(script(c, avoid_common=False), 'Katakana')
+			self.assertEqual(script(c), 'Katakana')
 		testcases2 = u'ー'
-		for c in testcases1+testcases2:
-			self.assertEqual(script(c, avoid_common=True), 'Katakana')
+		for c in testcases2:
+			self.assertEqual(script(c), 'Katakana')
+	
 	
 	def test_katakana_halfwidth(self):
 		"""Test unicodescript.script() with Katakana halfwidth"""
 		testcases = u'ｶﾀｶﾅ'
 		for c in testcases:
-			self.assertEqual(script(c, avoid_common=False), 'Katakana')
-			self.assertEqual(script(c, avoid_common=True), 'Katakana')
+			self.assertEqual(script(c), 'Katakana')
+	
 	
 	def test_latin_fullwidth(self):
 		"""Test unicodescript.script() with Latin fullwidth"""
 		testcases = u'ａＡ'
 		for c in testcases:
-			self.assertEqual(script(c, avoid_common=False), 'Latin')
-			self.assertEqual(script(c, avoid_common=True), 'Latin')
+			self.assertEqual(script(c), 'Latin')
 
 
 def suite():

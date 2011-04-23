@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest
 
-from tagenwa.util.trie import Trie
+from tagenwa.utils.trie import Trie
 
 class TestTrie(unittest.TestCase):	
 	

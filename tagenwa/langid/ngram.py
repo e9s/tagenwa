@@ -14,14 +14,27 @@ import re
 from nltk.classify.api import ClassifierI
 from nltk.probability import FreqDist, ELEProbDist, DictionaryProbDist
 
-from tagenwa.utils import sliding_tuples, merge_tagged
+from tagenwa.utils.iterators import sliding_tuples, merge_tagged
 from tagenwa.tag.hmm import ClassifierBasedHMMTagger
 
 
 
 ###############################################################################
-# N-gram
+# N-gram and feature sets
 ###############################################################################
+
+_SPACEPUNCT = re.compile(ur'(\s+|\W)', re.U)
+_DECIMALS = re.compile(ur'\d+', re.U)
+
+
+def tokenize(text):
+	"""Tokenize the text on spaces and punctuations.
+	
+	The text must be normalized to the "NFC" or "NFKC" form as the `re` module
+	only supports these two normalization forms.
+	"""
+	return [t for t in _SPACEPUNCT.split(text) if t]
+
 
 def build_ngram_function(n):
 	"""Return an function returning a list of character n-grams from a string
@@ -43,7 +56,6 @@ def build_ngram_function(n):
 	:return: function returning a list of n-grams
 	:rtype: function(unicode)
 	"""
-	# Assert that n is a strictly positive integer
 	assert(isinstance(n, int) and n > 0)
 	
 	# List items that must not be None to be a ngram
@@ -53,25 +65,13 @@ def build_ngram_function(n):
 		check_not_none = [(n - 1) / 2] if n % 2 else [n / 2 -1, n / 2]
 	
 	def get_ngrams(token):
-		if _SPACEPUNCT.match(token) is not None:
-			# If space or punctuation, don't return any n-grams
+		if _SPACEPUNCT.match(token) is not None or _DECIMALS.match(token) is not None:
+			# If the token contains only spaces or punctuation
+			# or if it contains only decimal digits,
+			# return an empty list
 			return []
 		return [u''.join(tu) for tu in sliding_tuples(token.lower(), n, fill_value=u' ') if all(tu[i] != u' ' for i in check_not_none)]
 	return get_ngrams
-
-
-
-###############################################################################
-# Feature set
-###############################################################################
-
-_SPACEPUNCT = re.compile(ur'(\s+|\W)', re.U)
-
-def tokenize(text, normalization_form='NFC'):
-	"""Tokenize the text on spaces and punctuations"""
-	text = unicodedata.normalize(normalization_form, text)
-	return [t for t in _SPACEPUNCT.split(text) if t]
-
 
 
 ###############################################################################
@@ -214,22 +214,23 @@ class NgramHMMLanguageTagger(ClassifierBasedHMMTagger):
 		super(NgramHMMLanguageTagger, self).__init__(classifier, loginit=loginit, logtrans=logtrans, *args, **kwargs)
 		
 	
+	def _get_logtrans(self, pdiff):
+		"""Return a transition log probability matrix with a defined probability
+		for transition to a different state.
+		
+		"""
+		log_not_pdiff = log1p(pdiff * (len(self.states)-1))
+		log_pdiff = log(pdiff)
+		return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
+	
+	
 	def logtrans(self, featureset1, featureset2):
-		if not featureset2[u'ngrams']:
-			pdiff = 1E-15
-			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
-			log_pdiff = log(pdiff)
-			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
+		if not featureset1[u'ngrams'] and not featureset2[u'ngrams']:
+			return self._get_logtrans(1E-10)
 		elif not featureset1[u'ngrams']:
-			pdiff = 1E-20
-			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
-			log_pdiff = log(pdiff)
-			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
+			return self._get_logtrans(1E-15)
 		else:
-			pdiff = 1E-10
-			log_not_pdiff = log1p(pdiff * (len(self.states)-1))
-			log_pdiff = log(pdiff)
-			return dict(((s1, s2), log_not_pdiff if s1==s2 else log_pdiff) for s1 in self.states for s2 in self.states)
+			return self._get_logtrans(1E-20)
 	
 	
 	def tag_text(self, text):

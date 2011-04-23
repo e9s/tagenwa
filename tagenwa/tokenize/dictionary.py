@@ -3,15 +3,7 @@
 Dictionary-based retokenizer
 
 """
-from itertools import islice
-
-from tagenwa.token import Token
 from tagenwa.util.trie import Trie
-from tagenwa.util.tools import sub
-
-
-def _default_key(tokens):
-	return tuple(t.text if hasattr(t,'text') else t for t in tokens)
 
 
 class DictionaryRetokenizer(object):
@@ -19,9 +11,7 @@ class DictionaryRetokenizer(object):
 	
 	def __init__(self, key=None):
 		self.trie = Trie()
-		
-		self._key = key if key is not None else _default_key
-		self._match = lambda x:True
+		self._key = key if key is not None else lambda x:x
 	
 	def add(self, key, replacement):
 		"""Add a new entry in the dictionary."""
@@ -45,32 +35,33 @@ class DictionaryRetokenizer(object):
 	def value(self, key):
 		"""Return the value for the specified key"""
 		return self.trie.get(key)
-
-	def retokenize(self, tokens, callback=lambda x,y:x):
-		i = 0
-		tokens = list(tokens)
-		length = len(tokens)
+	
+	def retokenize(self, tokens, callback=lambda x,y:y):
+		"""Retokenize the iterable of tokens using the dictionary.
+		
+		:param callback: callable that accepts a list of original tokens
+		                 and its corresponding value in the dictionary
+		                 and returns an iterable of tokens replacing it.
+		                 By default, its value is `lambda x,y: y`.
+		:type callback: callable
+		"""
+		if not isinstance(tokens, list):
+			tokens = list(tokens)
 		keyed_tokens = self._key(tokens)
 		find_prefix = self.trie.find_prefix
 		
+		i = 0
+		length = len(tokens)
 		while i < length:
 			# Search the longuest key in the trie
 			prefix = find_prefix(islice(keyed_tokens, i, None))
-			prefix_length = len(prefix)
-			if prefix_length and self._match(tokens[i:i+prefix_length]):
-				# Key found in the trie
-				for c in callback((Token(t) for t in self.trie.get(prefix)), tokens[i:i+prefix_length]):
+			if prefix:
+				# Key found in the trie: return the normalized result
+				prefix_length = len(prefix)
+				for c in callback(tokens[i:i+prefix_length], self.trie.get(prefix)):
 					yield c
-				i += len(prefix)
+				i += prefix_length
 			else:
-				# Key not found in the trie
+				# Key not found in the trie: just return the token
 				yield tokens[i]
 				i += 1
-
-
-class MonolingualDictionaryRetokenizer(DictionaryRetokenizer):
-	"""Dictionary-based retokenizer that only accepts tokens from a specific language."""
-
-	def __init__(self, lang, key=None):
-		DictionaryRetokenizer.__init__(self, key)
-		self._match = lambda tokens:all(t.get(u'lang') == lang for t in tokens)

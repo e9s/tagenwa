@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.utils import sliding_tuples, counts
+from tagenwa.utils.iterators import sliding_tuples, counts
 
 
 class TestUtils(unittest.TestCase):
 	
 	def test_util_doctest(self):
-		import tagenwa.util
-		failure_count, test_count = doctest.testmod(tagenwa.util)
-		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.util: %i failed out of %i' % (failure_count, test_count))
+		import tagenwa.utils.iterators
+		failure_count, test_count = doctest.testmod(tagenwa.utils.iterators)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.utils.iterators: %i failed out of %i' % (failure_count, test_count))
 
 	def test_sliding_tuples(self):
 		testcases = [

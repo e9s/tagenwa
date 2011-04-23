@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-Useful functions for tokenization
+Useful functions for handling iterables
 
 """
 import functools

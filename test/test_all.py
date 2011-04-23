@@ -1,24 +1,24 @@
 # -*- coding: UTF-8 -*-
 import unittest
 
-import test_utils
-import test_unicodescript
-import test_token
-import test_pre
-import test_ngram
-import test_trie
-import test_retokenizer_dictionary
-import test_retokenizer_number
+import test_langid_ngram
+import test_text_normalize
+import test_text_script
+import test_text_token
+import test_tokenize_dictionary
+import test_tokenize_treebank
+import test_utils_iterator
+import test_utils_trie
 
 all_tests = unittest.TestSuite([
-	test_utils.suite(),
-	test_unicodescript.suite(),
-	test_token.suite(),
-	test_pre.suite(),
-	test_ngram.suite(),
-	test_trie.suite(),
-	test_retokenizer_dictionary.suite(),
-	test_retokenizer_number.suite(),
+	test_langid_ngram.suite(),
+	test_text_normalize.suite(),
+	test_text_script.suite(),
+	test_text_token.suite(),
+	test_tokenize_dictionary.suite(),
+	test_tokenize_treebank.suite(),
+	test_utils_iterator.suite(),
+	test_utils_trie.suite(),
 ])
 
 def test_all():
