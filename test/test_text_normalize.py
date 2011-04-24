@@ -34,4 +34,12 @@ class TestNormalize(unittest.TestCase):
 			self.assertEqual(e, remove_ligatures(unicodedata.normalize('NFC',i)))
 	
 	
-	
+
+def suite():
+	suite = unittest.TestSuite([
+		unittest.TestLoader().loadTestsFromTestCase(TestNormalize),
+	])
+	return suite
+
+if __name__ == '__main__':
+	unittest.main()	

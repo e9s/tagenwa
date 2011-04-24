@@ -1,8 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.token import Token
-from tagenwa.retokenizer.dictionary import DictionaryRetokenizer
+from tagenwa.tokenize.dictionary import DictionaryRetokenizer
 
 class TestDictionaryRetokenizer(unittest.TestCase):
 	
@@ -27,7 +26,7 @@ class TestDictionaryRetokenizer(unittest.TestCase):
 			([u'abc', u'hello', u'xyz'],[u'abc', u'HELLO', u'xyz']),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, self.retokenizer.retokenize(i))
+			self.assertEqual(e, list(self.retokenizer.retokenize(i)))
 	
 	def test_compound(self):
 		testcases = [
@@ -41,7 +40,7 @@ class TestDictionaryRetokenizer(unittest.TestCase):
 			([u'abc', u'morning', u'xyz'],[u'abc', u'morning', u'xyz']),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, self.retokenizer.retokenize(i))
+			self.assertEqual(e, list(self.retokenizer.retokenize(i)))
 
 
 

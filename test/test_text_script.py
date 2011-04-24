@@ -9,9 +9,9 @@ class TestScript(unittest.TestCase):
 	
 	def test_unicodescript_doctest(self):
 		"""Test uniscript doctests"""
-		import tagenwa.unicodescript
-		failure_count, test_count = doctest.testmod(tagenwa.unicodescript)
-		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.unicodescript: %i failed out of %i' % (failure_count, test_count))
+		import tagenwa.text.script
+		failure_count, test_count = doctest.testmod(tagenwa.text.script)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.text.script: %i failed out of %i' % (failure_count, test_count))
 	
 	
 	def test_block(self):
@@ -79,7 +79,7 @@ class TestScript(unittest.TestCase):
 			self.assertEqual(script(c), 'Katakana')
 		testcases2 = u'ー'
 		for c in testcases2:
-			self.assertEqual(script(c), 'Katakana')
+			self.assertEqual(script(c), 'Common')
 	
 	
 	def test_katakana_halfwidth(self):

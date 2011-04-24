@@ -3,7 +3,8 @@
 Dictionary-based retokenizer
 
 """
-from tagenwa.util.trie import Trie
+from itertools import islice
+from tagenwa.utils.trie import Trie
 
 
 class DictionaryRetokenizer(object):

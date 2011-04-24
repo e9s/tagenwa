@@ -7,7 +7,7 @@ import test_text_script
 import test_text_token
 import test_tokenize_dictionary
 import test_tokenize_treebank
-import test_utils_iterator
+import test_utils_iterators
 import test_utils_trie
 
 all_tests = unittest.TestSuite([
@@ -17,7 +17,7 @@ all_tests = unittest.TestSuite([
 	test_text_token.suite(),
 	test_tokenize_dictionary.suite(),
 	test_tokenize_treebank.suite(),
-	test_utils_iterator.suite(),
+	test_utils_iterators.suite(),
 	test_utils_trie.suite(),
 ])
 

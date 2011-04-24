@@ -6,9 +6,9 @@ from tagenwa.text.token import iseol, ishexadecimal, isterm, isword
 class TestToken(unittest.TestCase):	
 	
 	def test_util_doctest(self):
-		import tagenwa.token
-		failure_count, test_count = doctest.testmod(tagenwa.token)
-		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.token: %i failed out of %i' % (failure_count, test_count))
+		import tagenwa.text.token
+		failure_count, test_count = doctest.testmod(tagenwa.text.token)
+		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.text.token: %i failed out of %i' % (failure_count, test_count))
 	
 	
 	def test_iseol(self):
@@ -33,11 +33,57 @@ class TestToken(unittest.TestCase):
 			(u':', False),
 			(u'', False),
 			(u' ', False),
+			(u'\t', False),
 			(u'\n', True),
-			(u'\t', True),
+			(u'\r', True),
+			(u'\r\n', True),
+			(u'\n\n', True),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, iseol(i))
+			self.assertEqual(e, iseol(i), repr(i))
+	
+	
+	def test_isterm(self):
+		testcases = [
+			# letters
+			(u'abcde', False),
+			(u'abc-de', False),
+			(u'é', False),
+			(u'あ', False),
+			(u'a_b', False),
+			(u'abc_x1', False),
+			(u'ಠ_ಠ', False),
+			# numbers
+			(u'1', False),
+			(u'①', False), # circled one
+			(u'ⅱ', False), # Small Roman Numeral Two (U+2171)
+			(u'四', False),
+			(u'1.0', False),
+			(u'1,000', False),
+			(u'1,000.00', False),
+			(u'0xABCDE', True),
+			(u'0x1234', True),
+			(u'0x12AB', True),
+			(u'0xFFFF', True),
+			# punctuations
+			(u'_', False),
+			(u'-', False),
+			(u'=', False),
+			(u'.', False),
+			(u'。', False),
+			(u'...', False),
+			(u':', False),
+			# empty
+			(u'', False),
+			# whitespace
+			(u' ', False), # ascii space
+			(u'　', False), # fullwidth space
+			(u'\t', False),
+			(u'\n', False),
+			(u'\r\n', False),
+		]
+		for i,e in testcases:
+			self.assertEqual(e, isterm(i), repr(i))
 	
 	
 	def test_isterm(self):
@@ -52,7 +98,7 @@ class TestToken(unittest.TestCase):
 			(u'ಠ_ಠ', True),
 			# numbers
 			(u'1', True),
-			(u'①', True), # circled one
+			(u'①', True), # circled one (U+2460)
 			(u'ⅱ', True), # Small Roman Numeral Two (U+2171)
 			(u'四', True),
 			(u'1.0', True),
@@ -77,7 +123,7 @@ class TestToken(unittest.TestCase):
 			(u'\r\n', False),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, isterm(i))
+			self.assertEqual(e, isterm(i), repr(i))
 	
 	
 	def test_isword(self):
@@ -92,7 +138,7 @@ class TestToken(unittest.TestCase):
 			(u'ಠ_ಠ', False),
 			# numbers
 			(u'1', False),
-			(u'①', False), # circled one
+			(u'①', False), # circled one (U+2460)
 			(u'ⅱ', False), # Small Roman Numeral Two (U+2171)
 			(u'四', True),
 			(u'1.0', False),
@@ -117,7 +163,7 @@ class TestToken(unittest.TestCase):
 			(u'\r\n', False),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, isword(i))
+			self.assertEqual(e, isword(i), repr(i))
 
 
 def suite():

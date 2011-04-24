@@ -40,7 +40,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	def span_tokenize_between(self, text, token_spans):
 		# Get the tokens between the found spans
 		between_spans = set()
-		i = 0
+		i, e = 0, 0
 		for s,e in sorted(token_spans):
 			if i != s:
 				between_spans.add((i,s))
@@ -91,12 +91,3 @@ def create_tokenizer(language):
 		return EnglishTreebankWordTokenizer()
 	else:
 		return GenericTreebankWordTokenizer()
-
-
-for t in EnglishTreebankWordTokenizer().tokenize(u'A.B. 1..2 re-starts... a/b a\\c http://www.abc.com/ EUR1.234.567,45 (or $2.345,67) and goes on...'):
-	print t.encode('utf-8')
-
-for t in EnglishTreebankWordTokenizer().tokenize(u"""'When I'M a Duchess,' she said to herself, (not in a very hopeful tone
-	though), 'I won't have any pepper in my kitchen AT ALL. Soup does very
-	well without--Maybe it's always pepper that makes people hot-tempered,'... 0xAB657FF """):
-	print t.encode('utf-8')

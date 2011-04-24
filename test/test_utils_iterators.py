@@ -4,7 +4,7 @@ import unittest, doctest
 from tagenwa.utils.iterators import sliding_tuples, counts
 
 
-class TestUtils(unittest.TestCase):
+class TestIterators(unittest.TestCase):
 	
 	def test_util_doctest(self):
 		import tagenwa.utils.iterators
@@ -74,7 +74,7 @@ class TestUtils(unittest.TestCase):
 
 
 def suite():
-	suite = unittest.TestLoader().loadTestsFromTestCase(TestUtils)
+	suite = unittest.TestLoader().loadTestsFromTestCase(TestIterators)
 	return suite
 
 if __name__ == '__main__':

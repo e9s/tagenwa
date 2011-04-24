@@ -1,13 +1,14 @@
 # -*- coding: UTF-8 -*-
 import nltk
 import unittest, doctest
+import unicodedata
 from tagenwa.tokenize.treebank import GenericTreebankWordTokenizer, EnglishTreebankWordTokenizer
 
 
 
-class TreebankWordTokenizer(unittest.TestCase):
+class TestTreebankWordTokenizer(unittest.TestCase):
 	
-	tokenizers = [
+	tokenizer_classes = [
 		GenericTreebankWordTokenizer,
 		EnglishTreebankWordTokenizer,
 	]
@@ -39,7 +40,7 @@ class TreebankWordTokenizer(unittest.TestCase):
 			(u'a01',               [u'a01']),
 			(u'a_01',              [u'a_01']),
 			(u'+555.55',           [u'+', u'555.55']),
-			(u'-555.55',           [u'-', u'555.55']),
+			(u'-555.55',           [u'-555.55']),
 			(u'$555.55',           [u'$', u'555.55']),
 			(u'$2,555.55',         [u'$', u'2,555.55']),
 			(u'1,000,000',         [u'1,000,000']),
@@ -90,7 +91,7 @@ class TestEnglishTreebankWordTokenizer(unittest.TestCase):
 			tokenizer.tokenize(shares),
 			[
 				"A&B", "shares", "are", "being", "traded", "at", "$", "1,234.50", "(", "1.8", "%", ")",
-				"on", "the", "N.Y.S.E.",
+				"on", "the", "N.Y.S.E", u".",
 			]
 		)
 	
@@ -117,3 +118,15 @@ class TestEnglishTreebankWordTokenizer(unittest.TestCase):
 				"--", "Maybe", "it", "'s", "always", "pepper", "that", "makes", "people", "hot-tempered", ",", "'", "..."
 			]
 		)
+
+
+
+def suite():
+	suite = unittest.TestSuite([
+		unittest.TestLoader().loadTestsFromTestCase(TestTreebankWordTokenizer),
+		unittest.TestLoader().loadTestsFromTestCase(TestEnglishTreebankWordTokenizer),
+	])
+	return suite
+
+if __name__ == '__main__':
+	unittest.main()	
