@@ -245,3 +245,28 @@ class NgramHMMLanguageTagger(ClassifierBasedHMMTagger):
 		"""Split the given text into a list of tuples (text part, language)."""
 		return list(merge_tagged(self.tag_text(text), lambda x:u''.join(x)))
 
+
+
+def demo():
+	"""Small demo of a language identifier using the europarl_raw corpus"""
+	import nltk.corpus.europarl_raw as europarl_raw
+	
+	# Build the training data
+	print 'Training the language identification...'
+	training = NgramLanguageTraining(n=3)
+	training.add_corpus(europarl_raw.english, 'en')
+	training.add_corpus(europarl_raw.french, 'fr')
+	
+	# Build the language classifier and the tagger
+	print 'Building the tagger...'
+	classifier = NgramLanguageClassifier(training)
+	tagger = NgramHMMLanguageTagger(classifier)
+	
+	# Test the tagger
+	print 'Test the tagger...'
+	tagged = tagger.tag_text(u'When he saw him, he said: "Bonjour, comment allez-vous?"')
+	print tagged
+	splitted = tagger.split_text(u'When he saw him, he said: "Bonjour, comment allez-vous?"')
+	print splitted
+	
+	return tagger
