@@ -37,13 +37,27 @@ class TestTreebankWordTokenizer(unittest.TestCase):
 	
 	def test_number(self):
 		testcases = [
-			(u'a01',               [u'a01']),
-			(u'a_01',              [u'a_01']),
-			(u'+555.55',           [u'+', u'555.55']),
-			(u'-555.55',           [u'-555.55']),
-			(u'$555.55',           [u'$', u'555.55']),
-			(u'$2,555.55',         [u'$', u'2,555.55']),
-			(u'1,000,000',         [u'1,000,000']),
+			(u'a01',                [u'a01']),
+			(u'a_01',               [u'a_01']),
+			(u'+555.55',            [u'+', u'555.55']),
+			(u'-555.55',            [u'-555.55']),
+			(u'$555.55',            [u'$', u'555.55']),
+			(u'$2,555.55',          [u'$', u'2,555.55']),
+			(u'1,000,000',          [u'1,000,000']),
+			(u'1,000,000 is a lot', [u'1,000,000', u'is', u'a', u'lot']),
+			(u'1,000,000, a lot',   [u'1,000,000', u',', u'a', u'lot']),
+		]
+		for tclass in self.tokenizer_classes:
+			tokenizer = tclass()
+			for (i,e) in testcases:
+				self.assertEqual(e, list(unicode(t) for t in tokenizer.tokenize(i)))
+	
+	
+	def test_tokenize_quotes(self):
+		testcases = [
+			(u"'",              [u"'"]),
+			(u"'abc'",          [u"'", u'abc', u"'"]),
+			(u"he said:'abc'.", [u"he", u"said", u":", u"'", u'abc', u"'", u"."]),
 		]
 		for tclass in self.tokenizer_classes:
 			tokenizer = tclass()

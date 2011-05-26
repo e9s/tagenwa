@@ -11,12 +11,11 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	_punctuation_patterns = [
 		# Separate most punctuations and spaces
 		re.compile(r"([^\w\.\-',&])", re.U),
-		# Separate commas if they're followed by space.
+		# Separate commas if they're followed by space or end of string
 		# (E.g., don't separate 2,500)
-		re.compile(r"(,)(?=\W)", re.U),
+		re.compile(r"(,)(?=\W|$)", re.U),
 		# Separate single quotes if they're preceded or followed by a non-word character.
-		re.compile(r"(')(?=\W)", re.U),
-		re.compile(r"(')(?=$)", re.U),
+		re.compile(r"(')(?=\W|$)", re.U),
 		re.compile(r"(?<=\W)(')", re.U),
 		re.compile(r"(?<=^)(')", re.U),
 		# Separate dashes (but not hyphens).
@@ -29,7 +28,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	
 	_quote_pattern = re.compile(r"(')", re.U)
 	
-	def span_tokenize_language(self, text, token_spans):
+	def span_tokenize_language(self, text, token_spans, **kwargs):
 		token_spans = set()
 		for match in self._quote_pattern.finditer(text):
 			if match:
@@ -50,7 +49,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 		return between_spans
 	
 	
-	def span_tokenize(self, text, no_space=True):
+	def span_tokenize(self, text, no_space=True, **kwargs):
 		
 		token_spans = set()
 		for regexp in self._punctuation_patterns:
@@ -58,7 +57,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 				if match:
 					token_spans.add(match.span(1))
 		
-		token_spans |= self.span_tokenize_language(text, token_spans)
+		token_spans |= self.span_tokenize_language(text, token_spans, **kwargs)
 		token_spans |= self.span_tokenize_between(text, token_spans)
 		token_spans = sorted(token_spans)
 		if no_space:
@@ -72,7 +71,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 
 class EnglishTreebankWordTokenizer(GenericTreebankWordTokenizer, TreebankWordTokenizer):
 	
-	def span_tokenize_language(self, text, token_spans):
+	def span_tokenize_language(self, text, token_spans, **kwargs):
 		token_spans = set()
 		for regexp in self.CONTRACTIONS2:
 			for match in regexp.finditer(text):
