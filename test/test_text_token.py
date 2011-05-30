@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import unittest, doctest
 
-from tagenwa.text.token import iseol, ishexadecimal, isterm, isword
+from tagenwa.text.token import is_eol, is_hexadecimal, is_term, is_word
 
 class TestToken(unittest.TestCase):	
 	
@@ -11,7 +11,7 @@ class TestToken(unittest.TestCase):
 		self.assertEqual(failure_count, 0, 'Testing doctest from tagenwa.text.token: %i failed out of %i' % (failure_count, test_count))
 	
 	
-	def test_iseol(self):
+	def test_is_eol(self):
 		testcases = [
 			(u'abcde', False),
 			(u'é', False),
@@ -40,27 +40,28 @@ class TestToken(unittest.TestCase):
 			(u'\n\n', True),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, iseol(i), repr(i))
+			self.assertEqual(e, is_eol(i), repr(i))
 	
 	
-	def test_isterm(self):
+	def test_is_term(self):
 		testcases = [
 			# letters
-			(u'abcde', False),
-			(u'abc-de', False),
-			(u'é', False),
-			(u'あ', False),
-			(u'a_b', False),
-			(u'abc_x1', False),
-			(u'ಠ_ಠ', False),
+			(u'abcde', True),
+			(u'abc-de', True),
+			(u'é', True),
+			(u'あ', True),
+			(u'a_b', True),
+			(u'abc_x1', True),
+			(u'ಠ_ಠ', True),
 			# numbers
-			(u'1', False),
-			(u'①', False), # circled one
-			(u'ⅱ', False), # Small Roman Numeral Two (U+2171)
-			(u'四', False),
-			(u'1.0', False),
-			(u'1,000', False),
-			(u'1,000.00', False),
+			(u'1', True),
+			(u'①', True), # circled one
+			(u'ⅱ', True), # Small Roman Numeral Two (U+2171)
+			(u'四', True),
+			(u'1.0', True),
+			(u'1000', True),
+			(u'1,000', True),
+			(u'1,000.00', True),
 			(u'0xABCDE', True),
 			(u'0x1234', True),
 			(u'0x12AB', True),
@@ -83,50 +84,10 @@ class TestToken(unittest.TestCase):
 			(u'\r\n', False),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, isterm(i), repr(i))
+			self.assertEqual(e, is_term(i), repr(i))
 	
 	
-	def test_isterm(self):
-		testcases = [
-			# letters
-			(u'abcde', True),
-			(u'abc-de', True),
-			(u'é', True),
-			(u'あ', True),
-			(u'a_b', True),
-			(u'abc_x1', True),
-			(u'ಠ_ಠ', True),
-			# numbers
-			(u'1', True),
-			(u'①', True), # circled one (U+2460)
-			(u'ⅱ', True), # Small Roman Numeral Two (U+2171)
-			(u'四', True),
-			(u'1.0', True),
-			(u'1,000', True),
-			(u'1,000.00', True),
-			(u'0xABCDE', True),
-			# punctuations
-			(u'_', False),
-			(u'-', False),
-			(u'=', False),
-			(u'.', False),
-			(u'。', False),
-			(u'...', False),
-			(u':', False),
-			# empty
-			(u'', False),
-			# whitespace
-			(u' ', False), # ascii space
-			(u'　', False), # fullwidth space
-			(u'\t', False),
-			(u'\n', False),
-			(u'\r\n', False),
-		]
-		for i,e in testcases:
-			self.assertEqual(e, isterm(i), repr(i))
-	
-	
-	def test_isword(self):
+	def test_is_word(self):
 		testcases = [
 			# letters
 			(u'abcde', True),
@@ -163,7 +124,7 @@ class TestToken(unittest.TestCase):
 			(u'\r\n', False),
 		]
 		for i,e in testcases:
-			self.assertEqual(e, isword(i), repr(i))
+			self.assertEqual(e, is_word(i), repr(i))
 
 
 def suite():
