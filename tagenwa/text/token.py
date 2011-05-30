@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 from unicodedata import category as ucategory
 
-def iseol(text):
+
+def is_eol(text):
 	"""Return true if all characters in the text are end-of-line characters
 	and there is at least one character, false otherwise.
 	
@@ -10,15 +11,15 @@ def iseol(text):
 	return all(c in u'\n\r' for c in text) and len(text) > 0
 
 
-def ishexadecimal(text):
-	"""Return true if the text is of the form 0x[0-9a-fA-F]+, false otherwise.
+def is_hexadecimal(text):
+	"""Return true if the text is of the form "0x[0-9a-fA-F]+", false otherwise.
 	
 	:rtype: bool
 	"""
 	return len(text) > 2 and text[:2] == u'0x' and all(c in u'0123456789abcdefABCDEF' for c in text[2:])
 
 
-def isterm(text):
+def is_term(text):
 	"""Return true if any character in the text is a letter or a number
 	and there is at least one character, false otherwise.
 	
@@ -27,7 +28,7 @@ def isterm(text):
 	return any(ucategory(c)[0] in 'LN' for c in text)
 
 
-def isword(text):
+def is_word(text):
 	"""Return true if the token is a word (only contains letters or dash punctuations), false otherwise.
 	
 	:rtype: bool
