@@ -85,7 +85,14 @@ class EnglishTreebankWordTokenizer(GenericTreebankWordTokenizer, TreebankWordTok
 		return token_spans
 
 
-def create_tokenizer(language):
+
+def get_tokenizer(language):
+	"""Create the tokenizer specific to the language if there is one
+	or create a generic tokenizer.
+	
+	:param language: language code (ISO 631-1)
+	:rtype language: unicode
+	"""
 	if language == u'en':
 		return EnglishTreebankWordTokenizer()
 	else:
