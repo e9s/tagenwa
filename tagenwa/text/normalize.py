@@ -29,8 +29,9 @@ _LIGATURE_TRANSLATIONS = {
 	ord(u'Æ'): u'AE',
 	ord(u'œ'): u'oe',
 	ord(u'Œ'): u'OE',
-	ord(u'ᵫ'): u'ue',
 	ord(u'ĳ'): u'ij', # normalized away with NFKC
+	ord(u'Ĳ'): u'IJ',
+	ord(u'ᵫ'): u'ue',
 }
 
 def remove_ligatures(text):
