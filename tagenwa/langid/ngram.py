@@ -148,16 +148,20 @@ class NgramLanguageClassifier(ClassifierI):
 	
 	
 	def score_classify(self, featureset):
-		"""Return a dict of scores (unnormalized probability estimates) for each language for the given featureset."""
+		"""Return a dict of scores (unnormalized probability estimates) for each language.
+		
+		
+		"""
 		
 		if u'ngrams' not in featureset:
 			raise ValueError('The feature set does not contain a feature named "ngrams".')
 		
 		# Calculate the score of each language as the unnormalized join probability of each n-gram
 		scores = {}
+		logpriors = featureset.get(u'logpriors', {})
 		for lang in self._probdists:
 			probdist = self._probdists[lang]
-			scores[lang] = exp(sum(probdist.logprob(ngram) for ngram in featureset[u'ngrams']))
+			scores[lang] = exp(sum(probdist.logprob(ngram) for ngram in featureset[u'ngrams']) + logpriors.get(lang, 0.0))
 		# Add a score for the "undetermined language"
 		if self._cutoff:
 			scores[u'und'] = pow(self._cutoff, len(featureset[u'ngrams']))
@@ -177,28 +181,33 @@ class NgramLanguageClassifier(ClassifierI):
 		return self.prob_classify(featureset).max()
 	
 	
-	def get_token_featureset(self, token):
+	def get_token_featureset(self, token, logpriors=None):
 		"""Return a featureset corresponding to the given token"""
-		return {
+		featureset = {
 			u'text': token,
 			u'ngrams': self._training._ngrams(token),
 		}
+		if logpriors is not None:
+			featureset[u'logpriors'] = logpriors
+		return featureset
 	
 	
-	def prob_classify_text(self, text):
+	def prob_classify_text(self, text, logpriors=None):
 		"""Return a probability distribution over labels for the given text."""
 		tokens = self._training._tokenize(text)
 		ngrams = itertools.chain.from_iterable(
-			self._training._ngrams(token) for token in tokens
+			self.get_token_featureset(token)[u'ngrams'] for token in tokens
 		)
 		featureset = {
 			u'text': text,
 			u'ngrams': list(ngrams),
 		}
+		if logpriors is not None:
+			featureset[u'logpriors'] = logpriors
 		return self.prob_classify(featureset)
 	
 	
-	def classify_text(self, text):
+	def classify_text(self, text, logpriors=None):
 		"""Return the most appropriate label for the given text."""
 		return self.prob_classify_text(text).max()
 
@@ -233,17 +242,17 @@ class NgramHMMLanguageTagger(ClassifierBasedHMMTagger):
 			return self._get_logtrans(1E-20)
 	
 	
-	def tag_text(self, text):
+	def tag_text(self, text, logpriors=None):
 		"""Return a list of tagged tokens from the given text."""
 		tokens = self._classifier._training._tokenize(text)
 		get_featureset = self._classifier.get_token_featureset
-		labeled_sequence = self.tag([get_featureset(token) for token in tokens])
+		labeled_sequence = self.tag([get_featureset(token, logpriors=logpriors) for token in tokens])
 		return [(token[u'text'], tag) for token, tag in labeled_sequence]
 	
 	
-	def split_text(self, text):
+	def split_text(self, text, logpriors=None):
 		"""Split the given text into a list of tuples (text part, language)."""
-		return list(merge_tagged(self.tag_text(text), lambda x:u''.join(x)))
+		return list(merge_tagged(self.tag_text(text, logpriors=logpriors), lambda x:u''.join(x)))
 
 
 
