@@ -37,7 +37,8 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	])
 	
 	
-	def span_tokenize_language(self, text, token_spans, **kwargs):
+	def _span_tokenize_language(self, text, token_spans, **kwargs):
+		"""Add language-specific tokens"""
 		token_spans = set()
 		for match in self._QUOTE_PATTERN.finditer(text):
 			if match:
@@ -45,7 +46,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 		return token_spans
 	
 	
-	def span_tokenize_between(self, text, token_spans):
+	def _span_tokenize_between(self, text, token_spans):
 		"""Add spans between the found spans to cover the whole text"""
 		
 		# Add the spans between the found spans
@@ -62,7 +63,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 		return between_spans
 	
 	
-	def span_tokenize_script(self, text, token_spans):
+	def _span_tokenize_script(self, text, token_spans):
 		"""Split the spans based on the script of the characters"""
 		scripts = [s for c,s in tag_script(text)]
 		script_spans = set()
@@ -79,16 +80,16 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	
 	
 	def span_tokenize(self, text, no_space=True, **kwargs):
-		
+		"""Return the spans for each token"""
 		token_spans = set()
 		for regexp in self._PUNCTUATION_PATTERNS:
 			for match in regexp.finditer(text):
 				if match:
 					token_spans.add(match.span(1))
 		
-		token_spans |= self.span_tokenize_language(text, token_spans, **kwargs)
-		token_spans |= self.span_tokenize_between(text, token_spans)
-		token_spans = self.span_tokenize_script(text, token_spans)
+		token_spans |= self._span_tokenize_language(text, token_spans, **kwargs)
+		token_spans |= self._span_tokenize_between(text, token_spans)
+		token_spans = self._span_tokenize_script(text, token_spans)
 		token_spans = sorted(token_spans)
 		if no_space:
 			token_spans = [(s,e) for s,e in token_spans if self._SPACE_PATTERN.match(text[s:e]) is None]
@@ -96,13 +97,14 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	
 	
 	def tokenize(self, text, **kwargs):
+		"""Tokenize the text"""
 		return [text[s:e] for s,e in self.span_tokenize(text, **kwargs)]
 
 
 
 class EnglishTreebankWordTokenizer(GenericTreebankWordTokenizer, TreebankWordTokenizer):
 	
-	def span_tokenize_language(self, text, token_spans, **kwargs):
+	def _span_tokenize_language(self, text, token_spans, **kwargs):
 		token_spans = set()
 		for regexp in self.CONTRACTIONS2:
 			for match in regexp.finditer(text):
