@@ -80,6 +80,20 @@ class TestTreebankWordTokenizer(unittest.TestCase):
 				self.assertEqual(e, list(unicode(t) for t in tokenizer.tokenize(i)))
 	
 	
+	def test_tokenizer_han(self):
+		testcases = [
+			# test zero-width space
+			(u'abc漢字def1',      [u'abc', u'漢字', u'def1']),
+			(u'abc漢字　def',      [u'abc', u'漢字', u'def']),
+			(u'abc漢字def',      [u'abc', u'漢字', u'def']),
+			(u'abc　漢字　def',      [u'abc', u'漢字', u'def']),
+		]
+		for tclass in self.tokenizer_classes:
+			tokenizer = tclass()
+			for (i,e) in testcases:
+				self.assertEqual(e, list(unicode(t) for t in tokenizer.tokenize(i)))
+	
+	
 	def test_tokenizer_indic(self):
 		testcases = [
 			# Devanagari ka - Devanagari virama (= halant) - Devanagari ya - Devanagari  aa

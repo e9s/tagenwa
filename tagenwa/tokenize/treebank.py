@@ -2,13 +2,15 @@
 import re
 from nltk.tokenize.treebank import TreebankWordTokenizer
 
+from tagenwa.text.script import script
+
 
 class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	"""A reimplementation of the nltk's TreebankWordTokenizer that also handles unicode."""
 	
-	_space_pattern = re.compile(r"\s+", re.U)
+	_SPACE_PATTERN = re.compile(r"\s+", re.U)
 	
-	_punctuation_patterns = [
+	_PUNCTUATION_PATTERNS = [
 		# Separate most punctuations and spaces
 		re.compile(r"([^\w\.\-',&])", re.U),
 		# Separate commas if they're followed by space or end of string
@@ -26,43 +28,71 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 		re.compile(r"(\.+)\s*(?=\n|$)", re.U),
 	]
 	
-	_quote_pattern = re.compile(r"(')", re.U)
+	_QUOTE_PATTERN = re.compile(r"(')", re.U)
+	
+	_SCRIPT_SPLITS = set([
+		(u'Latin', u'Han'), (u'Han', u'Latin'),
+		(u'Latin', u'Katakana'), (u'Katakana', u'Latin'),
+		(u'Latin', u'Hiragana'), (u'Hiragana', u'Latin'),
+	])
+	
 	
 	def span_tokenize_language(self, text, token_spans, **kwargs):
 		token_spans = set()
-		for match in self._quote_pattern.finditer(text):
+		for match in self._QUOTE_PATTERN.finditer(text):
 			if match:
 				token_spans.add(match.span(1))
 		return token_spans
 	
 	
 	def span_tokenize_between(self, text, token_spans):
-		# Get the tokens between the found spans
+		"""Add spans between the found spans to cover the whole text"""
+		
+		# Add the spans between the found spans
 		between_spans = set()
-		i, e = 0, 0
-		for s,e in sorted(token_spans):
-			if i != s:
-				between_spans.add((i,s))
-			i = e
-		if e != len(text):
-			between_spans.add((e,len(text)))
+		i, end = 0, 0
+		for start, end in sorted(token_spans):
+			if i != start:
+				between_spans.add((i, start))
+			i = end
+		
+		# Add a last span to go until the end of the text
+		if end != len(text):
+			between_spans.add((end,len(text)))
 		return between_spans
 	
+	
+	def span_tokenize_script(self, text, token_spans):
+		"""Split the spans based on the script of the characters"""
+		script_spans = set()
+		for start, end in token_spans:
+			prev_end = start
+			# For each span, split the span if the script transition dictates a split
+			for i in xrange(start, end):
+				if i+1 == end:
+					script_spans.add((prev_end, end))
+				elif (script(text[i]), script(text[i+1])) in self._SCRIPT_SPLITS:
+					script_spans.add((prev_end, i+1))
+					prev_end = i+1
+		return script_spans
+		
 	
 	def span_tokenize(self, text, no_space=True, **kwargs):
 		
 		token_spans = set()
-		for regexp in self._punctuation_patterns:
+		for regexp in self._PUNCTUATION_PATTERNS:
 			for match in regexp.finditer(text):
 				if match:
 					token_spans.add(match.span(1))
 		
 		token_spans |= self.span_tokenize_language(text, token_spans, **kwargs)
 		token_spans |= self.span_tokenize_between(text, token_spans)
+		token_spans = self.span_tokenize_script(text, token_spans)
 		token_spans = sorted(token_spans)
 		if no_space:
-			token_spans = [(s,e) for s,e in token_spans if self._space_pattern.match(text[s:e]) is None]
+			token_spans = [(s,e) for s,e in token_spans if self._SPACE_PATTERN.match(text[s:e]) is None]
 		return token_spans
+	
 	
 	def tokenize(self, text, **kwargs):
 		return [text[s:e] for s,e in self.span_tokenize(text, **kwargs)]
