@@ -2,7 +2,7 @@
 import re
 from nltk.tokenize.treebank import TreebankWordTokenizer
 
-from tagenwa.text.script import script
+from tagenwa.text.script import tag_script
 
 
 class GenericTreebankWordTokenizer(TreebankWordTokenizer):
@@ -64,6 +64,7 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	
 	def span_tokenize_script(self, text, token_spans):
 		"""Split the spans based on the script of the characters"""
+		scripts = [s for c,s in tag_script(text)]
 		script_spans = set()
 		for start, end in token_spans:
 			prev_end = start
@@ -71,11 +72,11 @@ class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 			for i in xrange(start, end):
 				if i+1 == end:
 					script_spans.add((prev_end, end))
-				elif (script(text[i]), script(text[i+1])) in self._SCRIPT_SPLITS:
+				elif (scripts[i], scripts[i+1]) in self._SCRIPT_SPLITS:
 					script_spans.add((prev_end, i+1))
 					prev_end = i+1
 		return script_spans
-		
+	
 	
 	def span_tokenize(self, text, no_space=True, **kwargs):
 		

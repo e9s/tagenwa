@@ -83,10 +83,12 @@ class TestTreebankWordTokenizer(unittest.TestCase):
 	def test_tokenizer_han(self):
 		testcases = [
 			# test zero-width space
-			(u'abc漢字def1',      [u'abc', u'漢字', u'def1']),
-			(u'abc漢字　def',      [u'abc', u'漢字', u'def']),
 			(u'abc漢字def',      [u'abc', u'漢字', u'def']),
-			(u'abc　漢字　def',      [u'abc', u'漢字', u'def']),
+			(u'abc漢字 def',     [u'abc', u'漢字', u'def']),
+			(u'abc漢字def',      [u'abc', u'漢字', u'def']),
+			(u'abc 漢字 def',    [u'abc', u'漢字', u'def']),
+			(u'abc漢字',         [u'abc', u'漢字']),
+			(u'漢字def',         [u'漢字', u'def']),
 		]
 		for tclass in self.tokenizer_classes:
 			tokenizer = tclass()
