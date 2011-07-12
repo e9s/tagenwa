@@ -56,3 +56,9 @@ def collapse_spaces(text):
 
 ################################################################################
 
+def normalize_eol(text):
+	"""Normalize the end-of-line characters to \\n."""
+	return text.replace(u'\r\n', u'\n').replace(u'\r', u'\n')
+
+################################################################################
+

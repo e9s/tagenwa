@@ -2,7 +2,7 @@
 import unittest, doctest
 import unicodedata
 
-from tagenwa.text.normalize import remove_combining_marks, remove_ligatures, collapse_spaces
+from tagenwa.text.normalize import remove_combining_marks, remove_ligatures, collapse_spaces, normalize_eol
 
 class TestNormalize(unittest.TestCase):	
 	
@@ -32,6 +32,16 @@ class TestNormalize(unittest.TestCase):
 		]
 		for i,e in testcases:
 			self.assertEqual(e, remove_ligatures(unicodedata.normalize('NFC',i)))
+	
+	
+	def test_normalize_eol(self):
+		testcases = [
+			(u'\n', u'\n'),
+			(u'\r',u'\n'),
+			(u'\r\n',u'\n'),
+		]
+		for i,e in testcases:
+			self.assertEqual(e, normalize_eol(i))
 	
 	
 
