@@ -8,32 +8,33 @@ from tagenwa.text.script import tag_script
 class GenericTreebankWordTokenizer(TreebankWordTokenizer):
 	"""A reimplementation of the nltk's TreebankWordTokenizer that also handles unicode."""
 	
-	_SPACE_PATTERN = re.compile(r"\s+", re.U)
+	_SPACE_PATTERN = re.compile(ur"\s+", re.U)
 	
 	_PUNCTUATION_PATTERNS = [
 		# Separate most punctuations and spaces
-		re.compile(r"([^\w\.\-',&])", re.U),
+		re.compile(ur"([^\w\.\-',&])", re.U),
 		# Separate commas if they're followed by space or end of string
 		# (E.g., don't separate 2,500)
-		re.compile(r"(,)(?=\W|$)", re.U),
+		re.compile(ur"(,)(?=\W|$)", re.U),
 		# Separate single quotes if they're preceded or followed by a non-word character.
-		re.compile(r"(')(?=\W|$)", re.U),
-		re.compile(r"(?<=\W)(')", re.U),
-		re.compile(r"(?<=^)(')", re.U),
+		re.compile(ur"(')(?=\W|$)", re.U),
+		re.compile(ur"(?<=\W)(')", re.U),
+		re.compile(ur"(?<=^)(')", re.U),
 		# Separate dashes (but not hyphens).
-		re.compile(r"(\-{2,})", re.U),
+		re.compile(ur"(\-{2,})", re.U),
 		# Separate ellipses (but not dots).
-		re.compile(r"(\.{2,})", re.U),
+		re.compile(ur"(\.{2,})", re.U),
 		# Separate periods that come before newline or end of string.
-		re.compile(r"(\.+)\s*(?=\n|$)", re.U),
+		re.compile(ur"(\.+)\s*(?=\n|$)", re.U),
 	]
 	
-	_QUOTE_PATTERN = re.compile(r"(')", re.U)
+	_QUOTE_PATTERN = re.compile(ur"(')", re.U)
 	
 	_SCRIPT_SPLITS = set([
 		(u'Latin', u'Han'), (u'Han', u'Latin'),
 		(u'Latin', u'Katakana'), (u'Katakana', u'Latin'),
 		(u'Latin', u'Hiragana'), (u'Hiragana', u'Latin'),
+		(u'Latin', u'Thai'), (u'Thai', u'Latin'),
 	])
 	
 	

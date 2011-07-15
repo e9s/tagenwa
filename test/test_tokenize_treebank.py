@@ -89,6 +89,7 @@ class TestTreebankWordTokenizer(unittest.TestCase):
 			(u'abc 漢字 def',    [u'abc', u'漢字', u'def']),
 			(u'abc漢字',         [u'abc', u'漢字']),
 			(u'漢字def',         [u'漢字', u'def']),
+			(u'漢字abc漢字',     [u'漢字', u'abc', u'漢字']),
 		]
 		for tclass in self.tokenizer_classes:
 			tokenizer = tclass()
