@@ -82,7 +82,7 @@ class TestTreebankWordTokenizer(unittest.TestCase):
 	
 	def test_tokenizer_han(self):
 		testcases = [
-			# test zero-width space
+			# test han-latin split
 			(u'abc漢字def',      [u'abc', u'漢字', u'def']),
 			(u'abc漢字 def',     [u'abc', u'漢字', u'def']),
 			(u'abc漢字def',      [u'abc', u'漢字', u'def']),
