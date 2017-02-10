@@ -2,8 +2,9 @@
 Unicode block and script data
 *****************************************************
 
-Tagenwa provides two functions in the module `tagenwa.uniscript` to access the block data and the script data from the Unicode database.
-The version of the unicode database currently used by Tagenwa is 5.1.0.
+Tagenwa provides functions in the module `tagenwa.text.script` to access the block data
+and the script data from the Unicode database.
+Tagenwa currently uses the version 6.0.0 of the unicode database.
 
 
 Unicode block
@@ -12,7 +13,7 @@ In Unicode, a `block <http://en.wikipedia.org/wiki/Unicode_block>`_
 is a named continuous range of codepoints (see http://unicode.org/glossary/#block).
 The `block()` function returns the name of the block as defined in the Unicode database.
 
-.. autofunction:: tagenwa.uniscript.block
+.. autofunction:: tagenwa.text.script.block
 
 
 Unicode script
@@ -24,5 +25,5 @@ Ukranian is written with a different subset
 and Japanese writing system uses several scripts (see http://unicode.org/glossary/#script).
 The `script()` function returns the name of the script as defined in the Unicode database.
 
-.. autofunction:: tagenwa.uniscript.script
+.. autofunction:: tagenwa.text.script.script
 

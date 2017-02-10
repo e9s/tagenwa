@@ -4,17 +4,17 @@ Tokenization
 ============
 Tokenization
 ============
-The preliminary multilingual tokenization is performed with the function `tagenwa.pre.tokenize`.
-The result of the tokenization is an iterable of instances of the class `Token`
-(see the section `Token`_ for more details).
-
-.. autofunction:: tagenwa.pre.tokenize
+Tokenization is a language-dependant task that splits a text into a list of tokens.
 
 
-=====
-Token
-=====
+===================
+Treebank tokenizers
+===================
 
-.. autoclass:: tagenwa.token.Token
+.. autoclass:: tagenwa.tokenize.treebank.GenericTreebankWordTokenizer
+	:members:
+	:undoc-members:
+
+.. autoclass:: tagenwa.tokenize.treebank.EnglishTreebankWordTokenizer
 	:members:
 	:undoc-members:

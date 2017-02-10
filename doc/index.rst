@@ -27,7 +27,7 @@ Table of contents:
 	:maxdepth: 2
 	
 	tokenization.rst
-	uniscript.rst
+	text_script.rst
 	langid.rst
 
 
